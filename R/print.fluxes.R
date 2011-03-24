@@ -7,19 +7,25 @@ function(x, digits = max(3, getOption("digits") - 3), ...){
 	co <- grep("CO2", names(xt))
 	ch <- grep("CH4", names(xt))
 	no <- grep("N2O", names(xt))
-	htdn <- grep("htd", names(xt))
+	htd <- xt[,-c(1:ab,co,ch,no)]
 	out <- nms.tab
 	## rl stuff
-	rla <- x$range.lim
-	rl.out <- x$range.lim
-	for(i in c(1:length(rla))){
-		rl <- rla[[i]]
-		if(length(rl)!=1){
-			mean.rl <- round(mean(rl))
-			range.rl <- round(range(rl))
-			rl.statement <- paste(mean.rl, "on average, ranging from", range.rl[1], "to", range.rl[2])
-		} else {rl.statement <- paste(rl, "(global)")}
-		rl.out[[i]] <- rl.statement
+	if(is.null(x$range.lim)){
+		rl.statement <- "is reported per measurement in the table"
+		rl.out <- list(rl.statement, rl.statement, rl.statement)
+	}
+	else{
+		rla <- x$range.lim
+		rl.out <- x$range.lim
+		for(i in c(1:length(rla))){
+			rl <- rla[[i]]
+			if(length(rl)!=1){
+				mean.rl <- round(mean(rl))
+				range.rl <- round(range(rl))
+				rl.statement <- paste(mean.rl, "on average, ranging from", range.rl[1], "to", range.rl[2])
+			} else {rl.statement <- paste(rl, "(global)")}
+			rl.out[[i]] <- rl.statement
+		}
 	}
 	## output
 	cat("GHG flux rates and quality flags", "\n")
@@ -41,8 +47,7 @@ function(x, digits = max(3, getOption("digits") - 3), ...){
 		N2O.tab <- data.frame(N2O.flags = paste(N2O[,8], N2O[,6], N2O[,7], ".", N2O[,9], sep=""), N2O.flux = round(N2O[,3], 3), N2O.us = format(paste(N2O[,1], N2O[,2], sep=" ")))
 		out <- data.frame(out, N2O.tab)
 	}
-	htd <- xt[,c(htdn[1]-1, htdn)]
-	htd <- apply(htd , 2, round, 3)
+	#htd <- apply(htd , 2, round, 3)
 	out <- data.frame(out, htd)
 	rownames(out) <- c(1:nrow(out))
 	cat("\n", "flag meanings: 'nrmse r2 range . nomba leak'", "\n\n")

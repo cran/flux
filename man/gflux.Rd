@@ -8,12 +8,12 @@ Calculate gas flux rate from two concentrations
 Calculate gas flux rate from two concentrations using the ideal gas law to obtain a mass flow from an area per time. Therefore, besides the two concentrations ct and c0 the temperature within and the volume of the closed chamber are needed. For areal reference the area from which the gases are emitted has to be given. Without any further unit transformation the input unit directly gives the output unit: When concentration is coming in ppm the calculated flux rate is in \eqn{\mu}g/m2*h, when concentration is in ppb the flux rate will be in ng/m2*h
 }
 \usage{
-gflux(ct, c0, T, V, A = 1, M = 44, t = 1/60, p = 101325)
+gflux(ct, c0 = NULL, T, V, A = 1, M = 44, t = 1/60, p = 101325)
 }
 
 \arguments{
   \item{ct}{
-Concentration of the gas at time t. When the function is used internally the concentration is automatically derived from a regression model.
+Concentration of the gas at time t. When the function is used internally the concentration is automatically derived from a regression model. May also be the concentration change in time dc/dt. In this case \code{c0} must not be specified.
 }
   \item{c0}{
 Concentration of the gas at time 0. When the function is used internally the concentration is automatically derived from a regression model.

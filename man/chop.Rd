@@ -1,23 +1,20 @@
 \encoding{UTF-8}
-\name{conz.prep}
-\alias{conz.prep}
+\name{chop}
+\alias{chop}
 \title{
-Prepare data for flux rate estimation with \code{\link{flux}}
+Prepare data for flux rate estimation with \code{\link{flux}} or GPP/Reco modelling.
 }
 \description{
-The function simply constructs a list of \code{\link{data.frame}}s that each contains the data for one dynamic closed chamber measurement. 
+The function simply constructs a list of \code{\link{data.frame}}s that each contains the data for one dynamic closed chamber measurement or for one NEE/GPP or \eqn{R_{eco}}{R_eco} model fit.
 }
 
 \usage{
-conz.prep(dat, columns, factors, nmes, min.cm = 3)
+chop(dat, factors, nmes = NULL, min.cm = 3)
 }
 
 \arguments{
   \item{dat}{
 \code{\link{data.frame}} containing static closed chamber data for several chamber measurements. See columns and example for details.
-}
-  \item{columns}{
-A character vector giving the names of the columns in \code{dat} that shall be considered. Defaults to NULL which means that all columns are taken.
 }
   \item{factors}{
 A character vector giving the names of the columns that are used to partition the data in \code{dat} into chunks that each contain the data for one chamber placement. \code{factors} \eqn{\subset} \code{columns}! See example.
@@ -31,7 +28,7 @@ Integer giving the minimum number of concentration measurements allowed in the t
 }
 
 \details{
-This could easily be hand scripted but the function shall provide a simple way to obtain the structure needed for \code{\link{flux}} and it also carries naming information.
+This could easily be hand scripted (e.g. with \code{\link[base]{split}}) but the function shall provide a simple way to obtain the structure needed for \code{\link{flux}} and it also carries naming information.
 }
 
 \value{
@@ -54,11 +51,7 @@ data(tt.pre)
 gcd <- tt.pre[tt.pre$sampletype_a=="P",]
 
 ## partition the data into data tables per chamber measurement
-# first tell which columns of the data you want to carry on
-columns <- c("date", "veg", "spot", "time_min", "temp_dC", "cham_area", 
-"cham_vol", "CO2ppm", "CO2Code", "CH4ppb", "CH4Code", "N2Oppb", "N2OCode")
-# then do the partitioning
-gcd.parts <- conz.prep(gcd, columns, factors = c("date", "spot", "veg"), 
+gcd.parts <- chop(gcd, factors = c("date", "spot", "veg"), 
 nmes = c("date", "veg", "spot"))
 # have a look at the first three tables
 gcd.parts$tables[1:3]

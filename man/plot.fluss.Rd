@@ -3,6 +3,8 @@
 \alias{plot.fluss}
 \alias{plot.flux}
 \alias{plot.fluxes}
+\alias{plot.fluxx}
+\alias{plot.fluxxes}
 \title{
 Functions for bulk plotting of concentration change with time as kind of 
 diagnostic plots for flux rate calculations
@@ -21,6 +23,10 @@ this package.
 
 \method{plot}{fluxes}(x, dims, ghg = "all", subs = NULL, folder = getwd(), 
 xlims = NULL, ask = TRUE, ...)
+
+\method{plot}{fluxx}(x, ...)
+
+\method{plot}{fluxxes}(x, dims, subs = NULL, folder = getwd(), ask = TRUE, ...)
 }
 
 \arguments{
@@ -72,7 +78,7 @@ Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>
 }
 
 \seealso{
-\code{\link{conz.prep}}, \code{\link{flux}}, \code{\link{flux.odae}}, \code{\link{flux.conv}}
+\code{\link{chop}}, \code{\link{flux}}, \code{\link{flux.odae}}, \code{\link{flux.conv}}
 }
 
 \examples{
@@ -84,7 +90,7 @@ gcd <- tt.pre[tt.pre$sampletype_a=="P",]
 
 ## partition the data into data tables per chamber measurement
 # then do the partitioning
-gcd.parts <- conz.prep(gcd, factors = c("date", "spot", "veg"), 
+gcd.parts <- chop(gcd, factors = c("date", "spot", "veg"), 
 nmes = c("date", "veg", "spot"))
 
 ## calculate flux rates for methane

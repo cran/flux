@@ -36,7 +36,7 @@ Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>
 }
 
 \seealso{
-\code{\link{flux}}, \code{\link{conz.prep}}, 
+\code{\link{flux}}, \code{\link{chop}}, 
 (also for examples)
 }
 

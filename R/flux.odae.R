@@ -14,14 +14,18 @@ function(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL){
 		return(out)
 	}
 	## using vp to extract variables from dat and combine with fixed parameters
-	dat <- data.frame(sapply(var.par, function(x) vp(dat, x)))
+	dat <- lapply(var.par, function(x) vp(dat, x))
 	## organize handthrough
 	stv <- match(c("ghg", "time", "gc.qual", "area", "volume"), names(dat))
 	handthrough <- names(which(sapply(var.par[-stv], is.character)))
-	dat.out <- sapply(c("area", "volume", handthrough), function(x) mean(dat[,x], na.rm=TRUE))
-	names(dat.out) <- paste("htd", names(dat.out), sep=".")
+	hdt.fac.sel <- sapply(dat[handthrough], is.numeric)
+	fac.out <- c(CH4 = "methane",CO22 = "carbon dioxide")
+	fac.out <- c(fac.out, sapply(dat[handthrough][!hdt.fac.sel], function(x) as.character(x[1])))
+	hdt <- c(dat[c("area", "volume")], dat[handthrough][hdt.fac.sel])
+	dat.out <- round(sapply(hdt, mean), 3)
 	## extract variables from dat for later flux calculation
-	dat <- dat[,c("ghg", "time", "gc.qual", "area", "volume", "t.air", "p.air")]
+	dat <- sapply(dat[c("ghg", "time", "gc.qual", "area", "volume", "t.air", "p.air")], function(x) x[])
+	dat <- data.frame(dat)
 	## sort dat according to time column (just in case the dara came weird)
 	dat <- dat[order(dat$time),]
 	## getting all possible combinations of at least three x
@@ -51,7 +55,7 @@ function(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL){
 	row.select <- vers[[m2t]]
 	names(dat)[1] <- var.par$ghg
 	dat$rl <- rl
-	res <- list(lm4flux = lm4flux, row.select = row.select, orig.dat = dat, dat.out = dat.out)
+	res <- list(lm4flux = lm4flux, row.select = row.select, orig.dat = dat, dat.out = dat.out, fac.out = fac.out)
 	return(res)
 	}
 

@@ -21,11 +21,16 @@ function(fl.dat, ghg = "CH4", r2.qual = 0.8, nrmse.lim = 0.2, out.unit = "auto",
 	## common base g/m2*h
 	flux <- switch(ghg, CO2 = flux/1e+6, CH4 = flux/1e+9, N2O = flux/1e+9)
 	## according to the output.unit the unit is changed
-	## per default the function tries to guess a unit that best refelcts the actual value
-	fluxes <- unlist(list(ng = flux*1e+9, mug = flux*1e+6, mg = flux*1e+3, g = flux, t = flux/1e+3))
+	## per default the function tries to guess a unit that best reflects the actual value
+	fluxes <- unlist(list(non = flux*0, ng = flux*1e+9, mug = flux*1e+6, mg = flux*1e+3, g = flux, t = flux/1e+3))
 	if(out.unit == "auto"){
-		flux <- fluxes[(abs(fluxes) < 10) & (abs(fluxes) >= 0.01)]
-		out.unit <- names(flux)
+		if(flux==0){
+			out.unit <- "non"
+		}
+		else{
+			flux <- fluxes[(abs(fluxes) < 10) & (abs(fluxes) >= 0.01)]
+			out.unit <- names(flux)
+		}
 	}
 	else{
 		flux <- fluxes[out.unit]

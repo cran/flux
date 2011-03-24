@@ -97,7 +97,7 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
-				pdf(file=paste(folder, "CO2.", j, ".pdf", sep=""), width=d[2], height=d[1])
+				pdf(file=paste(folder, "/CO2.", j, ".pdf", sep=""), width=d[2], height=d[1])
 				# prepare xlims when xlims is NULL
 				if(is.null(xlims)){
 					xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
@@ -121,7 +121,7 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
-				pdf(file=paste(folder, "CH4.", j, ".pdf", sep=""), width=d[2], height=d[1])
+				pdf(file=paste(folder, "/CH4.", j, ".pdf", sep=""), width=d[2], height=d[1])
 				# prepare xlims when xlims is NULL
 				if(is.null(xlims)){
 					xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
@@ -145,7 +145,7 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
-				pdf(file=paste(folder, "N2O.", j, ".pdf", sep=""), width=d[2], height=d[1])
+				pdf(file=paste(folder, "/N2O.", j, ".pdf", sep=""), width=d[2], height=d[1])
 				# prepare xlims when xlims is NULL
 				if(is.null(xlims)){
 					xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))

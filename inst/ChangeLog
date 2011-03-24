@@ -1,6 +1,44 @@
 FLUX VERSIONS
 
 
+Version 0.2-0
+
+	* Housekeeping and bug fixes to many functions.
+	
+	* New functions mf.flux and fluxx for estimating 
+	(ghg) flux rates from online dynamic closed 
+	chamber measurements in through-flow mode. Also
+	new are corresponding print and plotting methods.
+	
+	* New functions reco and gpp for modelling NEE
+	
+	* Function conz.prep has been renamed to chop
+	and cleaned up to be more efficient. The argument
+	column has been removed.
+	
+	* New function auc for integrating the area under
+	a curve. Was moved to package flux from package 
+	simba. In addition, now a threshold for y-values
+	can be chosen freely. Further the density of 
+	points is  increased for getting more exact 
+	results especially when thresholds are set.
+	
+	* Bug fixes and changes to flux.calib. The
+	function is now faster and simpler to use.
+	
+	* Changed gflux. Now it can also take delta 
+	concentration as the first argument. Allowed
+	streamlining within the flux functions.
+	
+	* Bug fixes in flux. Leak flags are now handed 
+	over correctly to the flux results list and 
+	appear correctly in diagnostic figures.
+	
+	* Changes to flux and flux.odae that allow to
+	hand through factors as well. Before you could
+	hand them through but they came out as numerals.
+
+
 Version 0.1-6
 
 	* Bug fix to conz.prep. Before certain date 

@@ -15,7 +15,7 @@ The functions are used to prepare and carry out gas flux rate estimation with dy
 flux(x, var.par, co2ntrol = list(leak = TRUE, relay = FALSE), 
 min.allowed = 3, max.nrmse = 0.1, nrmse.lim = 0.2, r2.qual = 0.8, 
 range.lim = 30, out.unit = "auto", elementar = FALSE, 
-hardflag = list(range = TRUE), p.values = TRUE)
+hardflag = list(range = TRUE), asterisks = TRUE)
 
 flux.odae(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL)
 
@@ -25,7 +25,7 @@ out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE))
 
 \arguments{
   \item{x}{
-A list with data tables as returned by \code{conz.prep}. Each table contains data for one chamber measurement. Usually there will be identifying columns, date, time and time sequence columns, and columns containing the concentrations of the greenhouse gases for each time step. At the minimum the columns specified in the argument \code{var.par} have to be there.
+A list with data tables as returned by \code{chop}. Each table contains data for one chamber measurement. Usually there will be identifying columns, date, time and time sequence columns, and columns containing the concentrations of the greenhouse gases for each time step. At the minimum the columns specified in the argument \code{var.par} have to be there.
 }
   \item{var.par}{
 A named list specifying the variables and parameters that are used in the estimation process and variables that should be handed through the function so that they are easily available for further analysis. Some of the names are obligatory, others are optional. See details and examples.
@@ -62,7 +62,7 @@ When the fluxes are wanted as element values set \code{elementar = TRUE}. Defaul
   \item{hardflag}{
 Named list that controls which of the quality flags are to be hard flagged (the value is changed according to the quality flag). Default is that the \code{range.lim} is hard flagged. So when the range of the actual concentration values for a chamber measurement is smaller than the set range limit a zero flux is given back. For changing a quality flag to a hard flag just provide the name of the quality parameter (without quotation marks) and set it to TRUE. Possible parameters that can be changed from/to hard/soft flag are \code{nrmse}, \code{range}, and \code{r2}. Further the number of measurements below ambient (\code{nomba}) can be hardflagged by setting \code{nomba = [0…nc]} with \code{nc} = number of concentration measurements for one chamber placement. Any flux measurement with a number of measurements below ambient >= \code{nomba} will be given back NA. See examples.
 }
-  \item{p.values}{
+  \item{asterisks}{
 Logical. If p-values (come as asterisks in standard console output) for the chosen regression models are wanted in the output, set to TRUE.
 }
   \item{dat}{
@@ -77,7 +77,7 @@ An object with the same structure as returned by \code{\link{flux.odae}}. See de
 }
 
 \details{
-Typically it will be most convenient to use \code{flux} on objects returned by \code{\link{conz.prep}} (i.e. on lists of data tables that contain all necessary data per chamber measurement including supporting information). \code{flux} simply wraps \code{flux.odae} and \code{flux.conv} applied on lists of chamber measurement data tables into one function. Thus, the data of a one day field campaign or a year of chamber measurements can easily be handled by simply running two functions (\code{conz.prep} and \code{flux}) consecutively to estimate ghg fluxes for all three common ghg gases. See example.
+Typically it will be most convenient to use \code{flux} on objects returned by \code{\link{chop}} (i.e. on lists of data tables that contain all necessary data per chamber measurement including supporting information). \code{flux} simply wraps \code{flux.odae} and \code{flux.conv} applied on lists of chamber measurement data tables into one function. Thus, the data of a one day field campaign or a year of chamber measurements can easily be handled by simply running two functions (\code{chop} and \code{flux}) consecutively to estimate ghg fluxes for all three common ghg gases. See example.
 
 Probably the most important argument is \code{var.par}. It specifies the variables (by referring to the names of the data columns) from \code{x}  and  parameters (fixed values that are constant for all chamber placements) that are used for the flux estimations. For simple handling it is expecting a named list. 
 
@@ -87,7 +87,7 @@ The list items that are used to specify the ghg for which flux estimation is car
 
 All these list items can either be given as a variable (name of a column in \code{x}) or as a fixed parameter (a numeric value). This makes no sense for the\code{ghgs} and \code{time}, but in many cases chamber \code{volume} and \code{area} will be constant across measurements. Another likely candidate for a fixed parameter is \code{p.air} because air pressure is often not logged during chamber measurements. All additional list items should be of type ‘variable‘ and refer to further columns in \code{x} if you want those data handed through the function and be part of the result tables (for having all data in one place for further analyses). You are free to choose appropriate names. Fixed parameters will not be relayed.
 
-If the flux estimation is carried out in two steps it will typically be carried out on a list structure as returned by \code{\link{conz.prep}}. Therefore, it is used within a \code{\link{lapply}} call. For details see examples. However, the functions \code{flux.odae} and \code{flux.conv} are  designed to be carried out on single data tables (\code{\link[base]{data.frame}}) per chamber measurement. 
+If the flux estimation is carried out in two steps it will typically be carried out on a list structure as returned by \code{\link{chop}}. Therefore, it is used within a \code{\link{lapply}} call. For details see examples. However, the functions \code{flux.odae} and \code{flux.conv} are  designed to be carried out on single data tables (\code{\link[base]{data.frame}}) per chamber measurement. 
 
 First \code{flux.odae} is run. It simply tries to find the best model fit for the series of concentration measurements that are given in \code{dat}. This \code{\link[base]{data.frame}} has to consist of five columns that give (in that order): gas concentration, closing time of the chamber in minutes, gas concentration quality flag, chamber volume, temperature within the chamber headspace during measurements (may change during chamber placement). See example data. 
 
@@ -103,9 +103,9 @@ The idea behind \code{co2ntrol} in \code{\link{flux}} is that the CO2 concentrat
 \value{
 \code{flux} returns a complex object of class \code{fluxes} that is a 3 entry list. When the object is printed to the console only the second entry is displayed in a modified form that is meant to maximize information display with small footprint for easy inspection. A table is printed to the console with three columns per gas. The first contains the quality flags (e.g. 111.02). The order is: \code{nrmse.f}, \code{r2.f}, \code{range.f}, \code{nomba.f}, \code{leak.f}. The first three are considered more important, and if they are '1' everything is fine. For the two behind the dot its a bit different: The first just gives the number of measurements below ambient, the second is '2' when no \code{co2ntrol} has been carried out, '0' when leaking occurred, and '1' when no leaking occurred.
 
-The \code{\link[base]{data.frame}} with the estimated flux rates contains all data needed for further analysis. The columns represent the entries in \code{fluss} of the single chamber measurements (including quality flags, see below) plus naming information according to the settings in the \code{nmes} argument of \code{\link{conz.prep}}. \code{\link{export}} provides a simple way to export the results.
+The \code{\link[base]{data.frame}} with the estimated flux rates contains all data needed for further analysis. The columns represent the entries in \code{fluss} of the single chamber measurements (including quality flags, see below) plus naming information according to the settings in the \code{nmes} argument of \code{\link{chop}}. \code{\link{export}} provides a simple way to export the results.
 
-The first entry is itself a list of lists and data tables. It is called \code{flux.res} and is comprised of objects that are returned by \code{flux.conv} per ghg. Each first level entry in this lists contains the information for one chamber measurement. It is named according to the \code{nmes}-setting in \code{\link{conz.prep}} and contains the elements \code{fluss} (which is itself a list with the elements given below), \code{fl.dat} (equals the object returned by \code{flux.odae}; see below), and \code{unit} which provides information on the output mass unit of the flux rate that is handed over to the function \code{\link{plot.fluss}} and to the table output.
+The first entry is itself a list of lists and data tables. It is called \code{flux.res} and is comprised of objects that are returned by \code{flux.conv} per ghg. Each first level entry in this lists contains the information for one chamber measurement. It is named according to the \code{nmes}-setting in \code{\link{chop}} and contains the elements \code{fluss} (which is itself a list with the elements given below), \code{fl.dat} (equals the object returned by \code{flux.odae}; see below), and \code{unit} which provides information on the output mass unit of the flux rate that is handed over to the function \code{\link{plot.fluss}} and to the table output.
 
 The elements of \code{fluss}:
 
@@ -138,12 +138,11 @@ linear and exponential regression for estimating diffusive CH4 fluxes by
 closed-chambers in peatlands. Soil Biology and Biochemistry 42: 507-515.
 }
 
-\author{
-Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>, Franziska Koebsch <franziska.koebsch@uni-rostock.de>
+\author{ Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>, Franziska Koebsch <franziska.koebsch@uni-rostock.de>, Ulrike Hagemann <ulrike.hagemann@zalf.de>
 }
 
 \seealso{
-\code{\link{conz.prep}}, \code{\link{flux.calib}}, \code{\link{gflux}}, \code{\link{plot.fluss}}
+\code{\link{chop}}, \code{\link{flux.calib}}, \code{\link{gflux}}, \code{\link{plot.fluss}}
 }
 
 \examples{
@@ -155,7 +154,7 @@ gcd <- tt.pre[tt.pre$sampletype_a=="P",]
 
 ## partition the data into data tables per chamber measurement
 # then do the partitioning
-gcd.parts <- conz.prep(gcd, factors = c("date", "spot", "veg"), 
+gcd.parts <- chop(gcd, factors = c("date", "spot", "veg"), 
 nmes = c("date", "veg", "spot"))
 
 ## calculate flux rates for methane
@@ -179,7 +178,7 @@ names(cgm)[1] <- "date"
 cgm$date <- "2011-03-16"
 # now we can do the flux.calib
 gcd.parts.cal <- flux.calib(gcd.parts, columns = c("date", "CH4ppb"), 
-calib = cgm, format="\%Y-\%m-\%d")
+calib = cgm, format="\%Y-\%m-\%d", window=48, buffer=1100, attach=TRUE)
 # do the flux rate estimation (we use the same var.par as before)
 flux.CH4 <- flux(gcd.parts.cal, var.par=vp.CH4, co2ntrol = NULL, 
 range.lim=NULL)
@@ -202,7 +201,8 @@ plot(flux.CH4.b, dims = c(3,6))
 
 ## do the flux rate estimation whilst using CO2 concentrations to
 ## control for outliers and possible chamber leakage
-flux.CH4.c <- flux(gcd.parts, var.par=vp.CH4, co2ntrol = list(leak = TRUE, relay = FALSE))
+flux.CH4.c <- flux(gcd.parts, var.par=vp.CH4, co2ntrol = list(leak = TRUE, 
+relay = FALSE))
 # look at the results table
 flux.CH4.c
 # plot the concentration-change-with-time-plots as kind of diagnostic
