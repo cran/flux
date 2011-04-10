@@ -1,0 +1,11 @@
+FLUX VERSIONS
+
+
+Version 0.1-2
+	
+	* Several minor fixes to flux-package.Rd
+	* Bugfix to plot.fluss.
+
+Version 0.1-1
+	
+	* The first version. Could still be unstable.
