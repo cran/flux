@@ -12,9 +12,9 @@ The functions are used to prepare and carry out gas flux rate estimation with dy
 }
 
 \usage{
-flux(x, columns, M = "CH4", min.allowed = 3, max.nrmse = 0.1, 
-nrmse.lim = 0.2, range.lim = 30, rl.backup = 30, r2.qual = 0.8, 
-nomba = NULL, in.unit = "ppb", out.unit = "mg")
+flux(x, columns, M = "CH4", co2ntrol = CO2.control(), min.allowed = 3, 
+max.nrmse = 0.1, nrmse.lim = 0.2, range.lim = 30, rl.backup = 30, 
+r2.qual = 0.8, nomba = NULL, in.unit = "ppb", out.unit = "mg")
 
 flux.odae(dat, min.allowed = 3, max.nrmse = 0.1, start = 1)
 
@@ -31,6 +31,9 @@ The columns that are used in the calculation process. They should represent in t
 }
   \item{M}{
 Character string identifying the greenhouse gas for which concentration measurements are handled. Can be \code{"CH4"}, \code{"N2O"} or \code{"CO2"}. Defaults to \code{"CH4"}. This argument determines the molar weight that is used in the flux calculation with \code{\link{gflux}} and the ambient level of the gas that is added to the diagnostic plots plotted with \code{plot.fluss} and is used for the determination of the number of measurements below ambient (\code{nomba}).
+}
+  \item{co2ntrol}{
+Options for doing a CO2 concentration measurement controlled estimation of flux rates. This means that the outliers and the slope of the CO2 concentration measurements influence the estimated flux rate. The exact behaviour is controlled by \code{\link{CO2.control}} (for details see there). Per default the outliers of the CO2 concentration measurements (the same arguments apply to detect outliers as for the CH4 and N2O measurements!) are already skipped before the outlier detection procedure is run. If there is a negative slope of the CO2 concentration over time, the chamber is assumed to be leaking and the tight flag (see Value section) is reported zero. 
 }
   \item{min.allowed}{
 Minimum number of concentration measurements that are allowed for the determination of the best model fit during the outlier detection and elimination (odae) procedure. Integer between 3 and the number of concentration measurements during one chamber placement.
@@ -84,11 +87,13 @@ At the moment the optimization bases on linear regression. All possible models w
 
 In case no model has a nrmse <= \code{max.nrmse}, the models are simply ranked according to their nrmse and the model with the lowest nrmse wins and is stored. In that way outliers are detected and exluded. \code{flux.odae} returns a complex object that contains most of the necessary information for the \code{flux.conv} function and also carries information that is later needed for the plot functions (\code{plot.flux} and \code{plot.fluss}). 
 
-The flux calculation is then carried out with the function \code{flux.conv}. It takes the object returned by \code{flux.odae} and additional information (chamber area, gas species, several quality settings and in- as well as output units) and calculates the flux rates. Further several quality checks (r2 check, range check, nrmse check, nomba check; for details see Value) are carried out and quality flags are reported along with the fluxes in the output. It is best when all quality flags are returned \code{TRUE}. Depending on the application quality requirements might vary. Therefore, we function rather report quality flags than excluding data. 
+The flux calculation is then carried out with the function \code{flux.conv}. It takes the object returned by \code{flux.odae} and additional information (chamber area, gas species, several quality settings and in- as well as output units) and calculates the flux rates. Further several quality checks (r2 check, range check, nrmse check, nomba check; for details see Value) are carried out and quality flags are reported along with the fluxes in the output. It is best when all quality flags are returned \code{TRUE}. Depending on the application quality requirements might vary. Therefore, the functions rather report quality flags than excluding data.
+
+The idea behind \code{co2ntrol} in \code{\link{flux}} is that the CO2 concentration measurements might serve as a further check on the integrity of the chamber measuremnt in the field. When \code{co2ntrol} (for details see \code{\link{CO2.control}}) is set, the function first carries out an outlier procedure on the CO2 concentration data (the respective columns have to be in \code{x} of course). Further, the slope of the CO2 concentration change over time is checked. When it is negative, chamber leakage is assumed and a respective quality flag (\code{leak.flag}) is reported FALSE.
 }
 
 \value{
-\code{flux} returns an object of class \code{fluss} that is a two entry list. 
+\code{flux} returns an object of class \code{fluss} that is a two entry list. When the object is returned only the second entry is displayed.
 
 The second entry of that list is a \code{\link[base]{data.frame}} with the estimated flux rates. The columns represent the entries in \code{fluss} of the single chamber measurements (see below) plus naming information according to the settings in the \code{nmes} argument of \code{\link{conz.prep}}.
 
@@ -104,6 +109,7 @@ The elements of \code{fluss}:
 \item{nomba.check }{Logical. nomba quality flag telling whether the number of concentration measurements has been <= the setting in \code{nomba}.}
 \item{r2 }{The actual r2 of the best fitted model that has been used for flux caclulation.}
 \item{nrmse }{The actual nrmse of the best fitted model that has been used for flux caclulation.}
+\item{leak.flag }{Logical. When \code{co2ntrol} was applied, possible chamber leakage as represented by decreasing CO2 concentrations over time is shown by a \code{TRUE}. When the function value is returned this is presented as a "tight"-value with reversed meaning: If 0 is returned, there might have been problems with chamber leakage during the measurement}
 
 The elements of \code{fl.dat} that is also the object returned by \code{flux.odae} are:
 
@@ -151,13 +157,37 @@ nmes = c("date", "veg", "spot"))
 CH4.lim <- 30
 # do the flux rate estimation
 flux.CH4 <- flux(gcd.parts, columns=c("CH4ppb", "time_min", "CH4Code", 
-"cham_vol", "temp_dC", "cham_area"), M = "CH4")
+"cham_vol", "temp_dC", "cham_area"), M = "CH4", co2ntrol = NULL)
 
 ## look at the results table
-flux.CH4$flux.table
+flux.CH4
 
 ## plot the concentration-change-with-time-plots as kind of diagnostic
 plot(flux.CH4, subs = NULL, dims = c(3,6))
+
+## do the flux rate estimation whilst using CO2 concentrations to
+## control for possible chamber leakage
+# first set the desired controls (without outlier transfer)
+cntrl <- CO2.control(trans.out = FALSE, range.lim = 40, min.allow = 4)
+# do the flux rate estimation
+flux.CH4.b <- flux(gcd.parts, columns=c("CH4ppb", "time_min", "CH4Code", 
+"cham_vol", "temp_dC", "cham_area"), M = "CH4", co2ntrol = cntrl)
+# look at the results table
+flux.CH4.b
+# plot the concentration-change-with-time-plots as kind of diagnostic
+plot(flux.CH4.b, subs = NULL, dims = c(3,6))
+
+## do the flux rate estimation whilst using CO2 concentrations to
+## control for outliers and possible chamber leakage
+# first set the desired controls (without outlier transfer)
+cntrl <- CO2.control(range.lim = 40, min.allow = 4)
+# do the flux rate estimation
+flux.CH4.c <- flux(gcd.parts, columns=c("CH4ppb", "time_min", "CH4Code", 
+"cham_vol", "temp_dC", "cham_area"), M = "CH4", co2ntrol = cntrl)
+# look at the results table
+flux.CH4.c
+# plot the concentration-change-with-time-plots as kind of diagnostic
+plot(flux.CH4.c, subs = NULL, dims = c(3,6))
 
 }
 

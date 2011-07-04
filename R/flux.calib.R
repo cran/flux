@@ -30,6 +30,6 @@ function(dat, columns, calib, format = "%d.%m.%Y", calib.max = 12000, range.ext 
 	# actually do the work
 	# extract the needed columns from calib
 	calib <- calib[,columns]
-	ghg.lim <- sapply(dat$tables, function(x) flux.cal(x[,columns], calib, format = format, calib.max = calib.max, range.ext = range.ext, window = window, calib.gas.defaults = calib.gas.defaults))
+	ghg.lim <- sapply(dat$tables, function(x) flux.cal(x[,columns], calib[,columns], format = format, calib.max = calib.max, range.ext = range.ext, window = window, calib.gas.defaults = calib.gas.defaults))
 	return(ghg.lim)
 }

@@ -1,6 +1,17 @@
 FLUX VERSIONS
 
 
+Version 0.1-3
+	
+	* Bug fixes to flux.calib and flux
+	* Added argument to function flux (co2ntrol).
+	* New function CO2.control that controls how
+	the evaluation of the CO2 data influences the 
+	flux rate estimation for the other gases
+	* New print.fluss function. The results of the
+	flux() estimation are now displayed nicely as
+	a table and the complex result is hidden.
+
 Version 0.1-2
 	
 	* Several minor fixes to flux-package.Rd
