@@ -1,6 +1,7 @@
 \encoding{UTF-8}
 \name{flux-internal}
 \alias{print.fluss}
+\alias{print.fluxes}
 \title{ Internal functions of the package flux that are usually not called (or only implicitly) by the user }
 \description{
 Mainly print functions for giving nice output.
@@ -8,6 +9,7 @@ Mainly print functions for giving nice output.
 
 \usage{
 \method{print}{fluss}(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{fluxes}(x, digits = max(3, getOption("digits") - 3), ...)
 }
 
 \arguments{

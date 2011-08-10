@@ -12,18 +12,18 @@ Several functions for the estimation of greenhouse gas flux rates using dynamic 
 \tabular{ll}{
 Package: \tab flux\cr
 Type: \tab Package\cr
-Version: \tab 0.1-2\cr
-Date: \tab 2011-04-10\cr
+Version: \tab 0.1-4\cr
+Date: \tab 2011-08-10\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
 Obtain flux rates from many chamber measurements within minutes. After 
 preparing the read in data (Field or device measured concentration data on 
 the three most prominent greenhouse gases) with \code{\link{conz.prep}} just 
-run \code{\link{flux}} on the result returned by \code{\link{conz.prep}} and 
-get flux rates in an easy to interpret table including quality flags. Plot 
-diagnostic plots as pdf per factor level to a folder or simply to the 
-screen.
+run \code{\link{flux}} or \code{\link{fluxes}} on the result returned by 
+\code{\link{conz.prep}} and get flux rates in an easy to interpret table
+including quality flags. Plot diagnostic plots as pdf per factor level 
+to a folder or simply to the screen.
 }
 
 \author{

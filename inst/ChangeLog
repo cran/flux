@@ -1,6 +1,32 @@
 FLUX VERSIONS
 
 
+Version 0.1-4
+
+	* Considerable changes to almost all functions.
+	
+	* Argument column has been changed to var.par
+	in function flux and allows better control (i.e.
+	the input of variables and fixed parameters).
+	This also allows to hand through data that 
+	shall later be used in further analyses.
+	
+	* Air pressure still defaults to 101325 Pa in 
+	the low level function gflux but must be also
+	given in flux and related functions through 
+	var.par as a fixed parameter or a variable
+	
+	* Output units are per default determined auto-
+	matically to give pretty numbers (0.01 < x <= 10).
+	
+	* Flags are global and appear in the same way in
+	the table outputs and figures. Via the new 
+	argument hardflag flags can be changed from soft
+	to hard flag. Per default only the range flag is
+	a hard flag (matches the former behaviour).
+	
+	
+
 Version 0.1-3
 	
 	* Bug fixes to flux.calib and flux

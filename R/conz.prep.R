@@ -1,9 +1,11 @@
 ## prepare function, making a list with a data.frame for
 ## each flux measurement (one chamber placement)
 conz.prep <-
-function(dat, columns, factors, nmes, min.cm = 3){
+function(dat, columns = NULL, factors, nmes, min.cm = 3){
 	## make the list for the by function
 	sellist <- lapply(c(1:length(factors)), function(x) dat[,factors[x]])
+	## prepare column vector in case columns = NULL
+	if(is.null(columns)){ columns <- c(1:ncol(dat))}
 	## separate into tables per chamber measurement
 	conz.parts <- by(dat[,columns], sellist, function(x) x[])
 	## in the prozess empty tables are produced when a comination
@@ -13,7 +15,7 @@ function(dat, columns, factors, nmes, min.cm = 3){
 	conz.parts <- conz.parts[flux.sel]
 	## tables with less then a specified number of concentration
 	## measurements (via min.cm) are eliminated as well
-	flux.sel <- sapply(conz.parts, function(x) nrow(x)>=3)
+	flux.sel <- sapply(conz.parts, function(x) nrow(x)>=min.cm)
 	conz.parts <- conz.parts[flux.sel]
 	## do the naming (for easy access to the data)
 	names(conz.parts) <- sapply(conz.parts, function(x) paste(sapply(x[][1,nmes], as.character), sep=".", collapse="."))

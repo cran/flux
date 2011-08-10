@@ -1,13 +1,26 @@
 flux.odae <-
-function(dat, min.allowed = 3, max.nrmse = 0.1, start = 1){
-	ghg <- names(dat)[1]
-	## const stays for constituent
-	names(dat)[1:5] <- c("const", "time", "gc.qual", "volume", "temp")
-	## transform data matrix according to the start flag
-	## (which states, which zero measurement should be taken)
-	dat.zero <- dat[dat$time == 0,]
-	dat.runs <- dat[dat$time != 0,]
-	dat <- rbind(dat.zero[start,], dat.runs)
+function(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL){
+	## extract range limits (if they are there)
+	if(is.null(rl) & !exists("rl", dat)){
+		rl <- 0
+		warning("No range limit defined. Has been set to 0.") 
+	}
+	if(!is.numeric(rl)){ rl <- dat[,rl]}
+	if(exists("rl", dat)){rl <- dat$rl}
+	## function vp that realises the compilation of dat for further use
+	vp <- function(dat, sel){
+		if(is.character(sel)){out <- dat[,sel]}
+		else{out <- rep(sel, nrow(dat))}
+		return(out)
+	}
+	## using vp to extract variables from dat and combine with fixed parameters
+	dat <- data.frame(sapply(var.par, function(x) vp(dat, x)))
+	## organize handthrough
+	stv <- match(c("ghg", "time", "gc.qual", "area", "volume"), names(dat))
+	handthrough <- names(which(sapply(var.par[-stv], is.character)))
+	dat.out <- sapply(c("area", "volume", handthrough), function(x) mean(dat[,x], na.rm=TRUE))
+	## extract variables from dat for later flux calculation
+	dat <- dat[,c("ghg", "time", "gc.qual", "area", "volume", "t.air", "p.air")]
 	## getting all possible combinations of at least three x
 	vers <- unlist(lapply(c(min.allowed:nrow(dat)), function(x) combn(c(1:nrow(dat)), x, simplify=FALSE)), recursive=FALSE)
 	vers <- lapply(vers, "sort")
@@ -16,28 +29,26 @@ function(dat, min.allowed = 3, max.nrmse = 0.1, start = 1){
 	## time steps. This is tested for and corrected in the following
 	sel <- unlist(lapply(vers, function(x) length(unique(dat[x,2]))))
 	vers <- vers[sel >= min.allowed]
-	## determine number of concentration measurements per version
+	## determine the number of concentration measurements per version
 	vers.n <- sapply(vers, "length")
 	## now we can calculate the regression models
-	vers.lm <- lapply(vers, function(x) lm(const ~ time, data=dat[x,]))
-	## and extract the statistic adj.r2
-	#adj.r2 <- unlist(lapply(vers.lm, function(x) summary(x)$adj.r.squared))
-	## as well as the statistic mrss (mean residual sum of squares)
-	#mrss <- unlist(lapply(vers.lm, function(x) sqrt(sum(residuals(x)^2)/length(residuals(x)))))
-	## and the statistic nrmse
+	vers.lm <- lapply(vers, function(x) lm(ghg ~ time, data=dat[x,]))
+	## and extract the statistic nrmse
 	nrmse <- unlist(lapply(vers.lm, function(x) sqrt(sum(residuals(x)^2)/summary(x)$df[2])/diff(range(x$model[1], na.rm=TRUE))))
-	## we rank them both
-	#adj.r2.ranks <- order(adj.r2, decreasing = TRUE)
-	#rss.ranks <- order(mrss)
+	## rank according to nrmse
 	ranks <- order(vers.n, 1-nrmse, decreasing=TRUE)
 	m2t <- ranks[nrmse[ranks] <= max.nrmse][1]
+	## avoid problems with NA's
 	if(is.na(m2t)){	
 		m2t <- order(nrmse)[1]
 	}
+	## select and store the best model
 	lm4flux <- vers.lm[[m2t]]
+	## store measurements that are used in the best model
 	row.select <- vers[[m2t]]
-	names(dat)[1] <- ghg
-	res <- list(lm4flux = lm4flux, row.select = row.select, orig.dat=dat)
+	names(dat)[1] <- var.par$ghg
+	dat$rl <- rl
+	res <- list(lm4flux = lm4flux, row.select = row.select, orig.dat = dat, dat.out = dat.out)
 	return(res)
 	}
 

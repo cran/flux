@@ -84,11 +84,12 @@ nmes = c("date", "veg", "spot"))
 # first define CH4 range limit (alternatively use flux.calib)
 CH4.lim <- 30
 # do the flux rate estimation
-flux.CH4 <- flux(gcd.parts, columns=c("CH4ppb", "time_min", "CH4Code", 
-"cham_vol", "temp_dC", "cham_area"), M = "CH4")
+vp.CH4 <- list(ghg = "CH4ppb", time = "time_min", gc.qual = "CH4Code", 
+volume = "cham_vol", t.air = "temp_dC", area = "cham_area", p.air = 101325)
+flux.CH4 <- flux(gcd.parts, var.par = vp.CH4, ghg = "CH4", co2ntrol = NULL)
 
 ## look at the results table
-flux.CH4$flux.table
+flux.CH4
 
 ## plot the concentration-change-with-time-plots as kind of diagnostic
 plot(flux.CH4, subs = NULL, dims = c(3,6))

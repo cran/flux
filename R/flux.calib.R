@@ -1,5 +1,5 @@
 flux.calib <-
-function(dat, columns, calib, format = "%d.%m.%Y", calib.max = 12000, range.ext = 200, window = 7, calib.gas.defaults = c(300, 1000, 2000, 6000, 10000)){
+function(dat, columns, calib, attach = TRUE, format = "%d.%m.%Y", rl.backup = 20, calib.max = 12000, range.ext = 200, window = 7, calib.gas.defaults = c(300, 1000, 2000, 6000, 10000)){
 	# defining the function which does the work
 	flux.cal <-
 	function(conz.dat, calib, format = "%d.%m.%Y", calib.max=12000, range.ext=200, window=7, calib.gas.defaults=c(300, 1000, 2000, 6000, 10000)){
@@ -26,10 +26,18 @@ function(dat, columns, calib, format = "%d.%m.%Y", calib.max = 12000, range.ext 
 		range.lim <- mean(range.lims)
 		return(range.lim)
 	}
-
 	# actually do the work
 	# extract the needed columns from calib
 	calib <- calib[,columns]
 	ghg.lim <- sapply(dat$tables, function(x) flux.cal(x[,columns], calib[,columns], format = format, calib.max = calib.max, range.ext = range.ext, window = window, calib.gas.defaults = calib.gas.defaults))
-	return(ghg.lim)
+	ghg.lim[is.na(ghg.lim)] <- ifelse(!is.null(rl.backup), rl.backup, min(ghg.lim, na.rm=TRUE))
+	if(attach){
+		for(i in c(1:length(dat$tables))){
+			dat$tables[[i]]$rl <- ghg.lim[i]
+		}
+	}
+	else{
+		dat <- ghg.lim
+	}
+	return(dat)
 }

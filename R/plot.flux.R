@@ -25,13 +25,9 @@ function(x, zero.line, note = "", margin = 0.2, xlims = NULL, ...){
 	## 1 - either range check or r2-check failed
 	## 2 - checks OK, flux was calculated
 	res <- paste(round(x$fluss$flux, 3))
-	if(!x$fluss$range.check){
-		res <- 0
-	}
-	if(!x$fluss$r2.check){
-		res <- NA
-	}
-	with(x, mtext(paste(fluss$range.check*1, fluss$r2.check*1, fluss$nrmse.check*1, ": ", res, " ", output.unit, "/m2*h", sep="")), cex=0.8)
+	pv <- coef(summary(x$fl.dat$lm4flux))[2,4]
+	symp <- symnum(pv, corr=FALSE, cutpoints = c(0,  .001,.01,.05, .1, 1), symbols = c("***","**","*","."," "))
+	with(x, mtext(paste(fluss[[7]]*1, fluss[[5]]*1, fluss[[6]]*1, ".", fluss[[8]], fluss[[9]]*1, ": ", res, symp, " ", unit, "/m2*h", sep="")), cex=0.8)
 	mtext(paste(note), line=-1.4, cex=0.8)
 	}
 

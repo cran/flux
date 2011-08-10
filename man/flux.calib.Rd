@@ -5,13 +5,13 @@
 Determine calibration measurement ranges according to the dates of real measurements
 }
 \description{
-Preliminary! The function basically takes a huge amount of calibration gas measurements and extracts the calibration gas measurements that have been carried out temporally close to a real data measurement and calculates the standard deviation of the calibration gas measurements. The obtained range limits can be used in \code{\link{flux}} as a quality parameter (via \code{range.lim}).
+The function basically takes calibration gas measurements and extracts the calibration gas measurements that have been carried out temporally close to a real data measurement and calculates the standard deviation of the calibration gas measurements. The obtained range limits can be used in \code{\link{flux}} or \code{\link{fluxes}} as a quality parameter (via \code{range.lim}).
 }
 
 \usage{
-flux.calib(dat, columns, calib, format = "\%d.\%m.\%Y", calib.max = 12000, 
-range.ext = 200, window = 7, calib.gas.defaults = c(300, 1000, 2000, 
-6000, 10000))
+flux.calib(dat, columns, calib, attach = TRUE, format = "\%d.\%m.\%Y", 
+rl.backup = 20, calib.max = 12000, range.ext = 200, window = 7, 
+calib.gas.defaults = c(300, 1000, 2000, 6000, 10000))
 }
 
 \arguments{
@@ -24,8 +24,14 @@ Character vector giving the names of the two columns that shall be taken from \c
   \item{calib}{
 \code{\link{data.frame}} with concentration measurements of calibration gases that have been carried out at least in part during the time the concentration measurements in \code{dat} have been achieved.
 }
+  \item{attach}{
+Logical. If TRUE the range limits are attached to the original data.
+}
   \item{format}{
 Character string specifying the format of dates in \code{dat} as well as in \code{calib}. Internally dates are converted to a date format R can handle (see \code{\link[base]{strptime}} for details and format options).
+}
+  \item{rl.backup}{
+Numeric value. Range limit backup value that is used in situations where no range limit can be derived from the calibration measurements. See details. Defaults to a quite reasonable 20.
 }
   \item{calib.max}{
 Numeric value. Maximum accepted concentration measurement for a calibration gas. All calibration gas measurements are filtered and any values above this limit are skipped. 
@@ -42,13 +48,13 @@ Numeric or integer vector giving the pre-configured concentrations of the respec
 }
 
 \details{
-The function automatically detects the single species of calibration gases that have been measured. It calculates the standard deviations of the measurements per calibration gas species and than gives back an average of the calculated range limit values if there are more than one calibration gas concentrations covered by the range within the field concentration measurements per chamber placement. However, this is rather academic because a chamber measurements for which concentrations develop over the range of two or more calibration concentrations will typically not have a range limit problem.
+The function automatically detects the single species of calibration gases that have been measured. It calculates the standard deviations of the measurements per calibration gas species and than gives back an average of the calculated range limit values if there are more than one calibration gas concentrations covered by the range within the field concentration measurements per chamber placement. However, this is rather academic because a chamber measurement for which concentrations develop over the range of two or more calibration concentrations will typically not have a range limit problem.
 
-In its actual form it is possible that there are no valid calibration measurements found for certain chamber data because the range of the chamber data (even with range extension) does not cover any of the calibration gas concentrations. One could try to increase the \code{range.ext} argument to achieve better results.
+In its actual form it is possible that there are no valid calibration measurements found for certain chamber data because the range of the chamber data (even with range extension) does not cover any of the calibration gas concentrations. In this case, the minimum range limit is assigned if \code{rl.backup} = NULL.
 }
 
 \value{
-Returns a named vector with the range limits of the measurement device (as needed within \code{\link{flux}}) per chamber measurement.
+Returns a named vector with the range limits of the measurement device (as needed within \code{\link{flux}}) per chamber measurement or attaches the range limits to the original data tables that are in \code{x} and returns the altered \code{x}.
 }
 
 \author{
@@ -92,6 +98,10 @@ calib = cal, format="\%Y-\%m-\%d")
 # CO2 range limits 
 CO2.lims <- flux.calib(gcd.parts, columns = c("date", "CO2ppm"), 
 calib = cal, format="\%Y-\%m-\%d")
+
+## attach the range limits to the original data
+gcd.parts.cal <- flux.calib(gcd.parts, columns = c("date", "CH4ppb"), 
+calib = cal, format = "\%Y-\%m-\%d", attach = TRUE)
 
 }
 
