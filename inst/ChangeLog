@@ -1,15 +1,71 @@
 FLUX VERSIONS
 
 
+Version 0.1-5
+
+	* The functionality of flux() and fluxes() 
+	is now in flux() including pretty printing
+	to the console. fluxes() has been abandoned.
+	
+	* The range limits are now returned with the flux
+	results
+	
+	* New export() function for simple export.
+	
+	* The behaviour of inspect() has been changed.
+	The function now understands lazy naming: So only 
+	the parts of the measurement names that are 
+	necessary for unambiguous identification have to
+	be given. Therefore, the sustain-argument has 
+	been abandoned.
+	
+	* New plot.fluxes() function. Additionaly the 
+	maximum range of xlim in a dataset is taken per 
+	default for the xlims of the single figures to 
+	ease comparison.
+	
+	* When prettily printing to the console the
+	names of the gases are now printed for objects
+	of class fluxes.
+	
+	* Also the leak.flag can be hardflagged now.
+	
+	* The gc quality flags can now be missing. In this
+	case the function simply assumes that all 
+	measurements were OK.
+	
+	* Function CO2.control() has been abandoned. 
+	Because the new fluxes() handles co2ntrol in
+	a different way than flux() did it is not necessary 
+	anymore.
+	
+	
+
 Version 0.1-4
 
-	* Considerable changes to almost all functions.
+	* Considerable changes to almost all functions
+	including code clean-up and discontinuation
+	of some arguments (e.g. rl.backup and in.unit 
+	in flux, start in flux.odae).	
 	
-	* Argument column has been changed to var.par
-	in function flux and allows better control (i.e.
+	* New function fluxes for estimating fluxes for
+	all three major greenhouse gases at once.
+	
+	* New function inspect for simple inspection
+	and alteration of concentration measurement tables.
+	
+	* New print functions for objects of classes fluss
+	and fluxes to give comprehensive but easy to grasp
+	output to the console
+	
+	* Update to flux: argument column has been changed 
+	to var.par and allows better control (i.e.
 	the input of variables and fixed parameters).
 	This also allows to hand through data that 
 	shall later be used in further analyses.
+	
+	* Further updates to flux: Option for p values 
+	for the fitted models in the result, 
 	
 	* Air pressure still defaults to 101325 Pa in 
 	the low level function gflux but must be also
@@ -18,6 +74,7 @@ Version 0.1-4
 	
 	* Output units are per default determined auto-
 	matically to give pretty numbers (0.01 < x <= 10).
+	The possibility 
 	
 	* Flags are global and appear in the same way in
 	the table outputs and figures. Via the new 
@@ -25,6 +82,8 @@ Version 0.1-4
 	to hard flag. Per default only the range flag is
 	a hard flag (matches the former behaviour).
 	
+	* Update to CO2.control: max.nrmse can be specified
+	separately.
 	
 
 Version 0.1-3
@@ -38,10 +97,12 @@ Version 0.1-3
 	flux() estimation are now displayed nicely as
 	a table and the complex result is hidden.
 
+
 Version 0.1-2
 	
 	* Several minor fixes to flux-package.Rd
 	* Bugfix to plot.fluss.
+
 
 Version 0.1-1
 	

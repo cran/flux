@@ -68,8 +68,7 @@ gcd.parts$nmes
 inspect(gcd.parts, c("2011-03-15.c.3", "2011-03-15.c.6", "2011-03-15.p.6"))
 # inspect the same tables using their indices
 inspect(gcd.parts, c(3,6,12))
-# or use sustain
-inspect(gcd.parts, c("c.3", "c.6", "p.6"), sustain="2011-03-15")
+inspect(gcd.parts, c("c.3", "c.6", "p.6"))
 }
 
 \keyword{ manip }

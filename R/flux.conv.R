@@ -74,12 +74,12 @@ function(fl.dat, ghg = "CH4", r2.qual = 0.8, nrmse.lim = 0.2, out.unit = "auto",
 		ghg <- paste(ghg, switch(ghg, CO2 = "C", CH4 = "C", N2O = "N"), sep="-")
 	}
 	## prepare output
-	fluss <- list(ghg = ghg, flux = flux, r2 = r2, nrmse = nrmse, r2.f = r2.f, range.f = range.f, nrmse.f = nrmse.f, nomba.f = nomba)
+	fluss <- list(ghg = ghg, flux = flux, r2 = r2, nrmse = nrmse, r2.f = r2.f, range.f = range.f, nrmse.f = nrmse.f, nomba.f = nomba, leak.f = NA)
 	## changing names to reflect on hardflags (somewhat ugly)
-	hf <- pmatch(names(hardflag)[sapply(hardflag, is.logical)], names(fluss)[5:8])
+	hf <- pmatch(names(hardflag)[sapply(hardflag, is.logical)], names(fluss)[5:9])
 	nms <- sapply(strsplit(names(fluss), split="\\."), function(x) x[1])
-	nms[5:8][hf] <- paste(nms[5:8][hf], ".hf", sep="")
-	nms[5:8][-hf] <- paste(nms[5:8][-hf], ".f", sep="")
+	nms[5:9][hf] <- paste(nms[5:9][hf], ".hf", sep="")
+	nms[5:9][-hf] <- paste(nms[5:9][-hf], ".f", sep="")
 	names(fluss) <- nms
 	## put output together
 	res <- list(fluss = fluss, fl.dat = fl.dat, unit = out.unit)

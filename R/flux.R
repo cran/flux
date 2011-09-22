@@ -1,74 +1,183 @@
 flux <-
-function(x, var.par, ghg = "CH4", co2ntrol = CO2.control(), min.allowed = 3, max.nrmse = 0.1, nrmse.lim = 0.2, r2.qual = 0.8, range.lim = 30, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE), p.values=TRUE){
-	## get call for later reference
-	cl <- match.call()
+function(x, var.par, co2ntrol = list(leak = TRUE, relay = FALSE), min.allowed = 3, max.nrmse = 0.1, nrmse.lim = 0.2, r2.qual = 0.8, range.lim = 30, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE), p.values = TRUE){
 	## extract the name vector from x
 	nmes <- x$nmes
 	## extract the data tables from x
 	x <- x$tables
-	## provide an empty leak.flag vector (in case co2ntrol = NULL)
+	## provide a leak.flag in case no co2ntrol is wanted
 	leak.flag <- rep(2, length(x))
-	## check about range.lim and attach calibration data to the data
-	## and provide for handing through the correct range.lim to the results
-	if(!is.null(range.lim)){
-		for(i in c(1:length(x))){
-			x[[i]]$rl <- ifelse(length(range.lim)==1, range.lim, range.lim[i])
-		}
-		if(is.character(range.lim)){
-			range.lim <- sapply(x, function(x) x[1,range.lim])
-		}
-	}
+	## provide correct quality parameters for each gas
+	if(length(max.nrmse)==1){max.nrmse <- list(CO2 = max.nrmse, CH4 = max.nrmse, N2O = max.nrmse)}
+	if(length(nrmse.lim)==1){nrmse.lim <- list(CO2 = nrmse.lim, CH4 = nrmse.lim, N2O = nrmse.lim)}
+	if(length(r2.qual)==1){r2.qual <- list(CO2 = r2.qual, CH4 = r2.qual, N2O = r2.qual)}
+	if(length(range.lim)==1){range.lim <- list(CO2 = range.lim, CH4 = range.lim, N2O = range.lim)}
 	else{
-		if(exists("rl", x[[1]])){
-			range.lim <- sapply(x, function(x) mean(x$rl))
-		} else {range.lim <- 0}
+		sel <- match(names(range.lim), c("CO2", "CH4", "N2O"))
+		rl <- list(CO2 = 0, CH4 = 0, N2O = 0)
+		rl[sel] <- range.lim
+		range.lim <- rl
 	}
-	## check if co2ntrol is wanted and carry out when it is…
-	if(!is.null(co2ntrol)){
-		## check about range.lim and attach calibration data to the data
-		for(i in c(1:length(x))){
-			x[[i]]$CO2.rl <- ifelse(length(co2ntrol$range.lim)==1, co2ntrol$range.lim, co2ntrol$range.lim[i])
+	if(length(out.unit)==1){out.unit <- list(CO2 = out.unit, CH4 = out.unit, N2O = out.unit)}
+	## check about range.lim and attach calibration data to the data
+	CO2.rl <- vector("numeric", length(x))
+	CH4.rl <- vector("numeric", length(x))
+	N2O.rl <- vector("numeric", length(x))
+	for(i in c(1:length(x))){
+			CO2.rl[i] <- ifelse(length(range.lim$CO2)==1, range.lim$CO2, range.lim$CO2[i])
+			x[[i]]$CO2.rl <- CO2.rl[i]
+			CH4.rl[i] <- ifelse(length(range.lim$CH4)==1, range.lim$CH4, range.lim$CH4[i])
+			x[[i]]$CH4.rl <- CH4.rl[i]
+			N2O.rl[i] <- ifelse(length(range.lim$N2O)==1, range.lim$N2O, range.lim$N2O[i])
+			x[[i]]$N2O.rl <- N2O.rl[i]
 		}
+	## prepare output. necessary to have empty slots later
+	## put the original results into a list
+	flux.res <- list(CO2 = NA, CH4 = NA, N2O = NA)
+	## prepare all in one big results table
+	flux.table <- data.frame(nmes)
+	## run the outlier detection and elimination routines for the ghg and estimate the fluxes
+	## prepare selectors
+	co <- grep("CO2", names(var.par))
+	ch <- grep("CH4", names(var.par))
+	no <- grep("N2O", names(var.par))
+	vp <- var.par[-c(co, ch, no)]
+	cat(".",sep="")
+	## CO2 stuff
+	if(length(co)!=0){
 		var.par.CO2 <- var.par
-		var.par.CO2[c("ghg", "gc.qual")] <- co2ntrol$columns
-		## do CO2 range check on the original tables
-		CO2.range.check <- sapply(x, function(x) ifelse(diff(range(x[,var.par.CO2$ghg])) >= mean(x$CO2.rl), TRUE, FALSE))
-		## do flux.odae very much standard like on the CO2 data (have to be in x though)
-		x.CO2 <- lapply(x, function(x) flux.odae(x, var.par = var.par.CO2, min.allowed = co2ntrol$min.allow, max.nrmse = co2ntrol$max.nrmse, rl = "CO2.rl"))
-		## calculate leak flag (CO2 is decreasing although an opaque chamber is used)
-		if(co2ntrol$leak){
-			leak.flag <- sapply(x.CO2, function(x) coef(x$lm4flux)[2]) <= 0
-			leak.flag <- !as.logical(leak.flag*CO2.range.check)
+		## check for gcq and add 0 if necessary
+		if(sum(names(var.par.CO2)=="CO2.gcq")==0) {
+			var.par.CO2$CO2.gcq = 0
+			warning("CO2 GC quality flags have been set to zero")
 		}
-		## if methane and nitrous oxide concentration measurements shall be
-		## skipped when the CO2 measurement at this time is an outlier
-		if(co2ntrol$relay){
-			x.sub <- lapply(which(CO2.range.check), function(y) x[[y]][x.CO2[[y]]$row.select,])
-			x[which(CO2.range.check)] <- x.sub
+		# update co
+		co <- grep("CO2", names(var.par.CO2))
+		##
+		names(var.par.CO2)[names(var.par.CO2)=="CO2"] <- "ghg"
+		names(var.par.CO2)[names(var.par.CO2)=="CO2.gcq"] <- "gc.qual"
+		CO2.pre <- lapply(x, function(x) flux.odae(x, var.par = c(var.par.CO2[co], vp), min.allowed = min.allowed, max.nrmse = max.nrmse$CO2, rl="CO2.rl"))
+		cat(".",sep="")
+		## do prep for CO2 and co2ntrol if wanted
+		if(!is.null(co2ntrol)){
+			CO2.range.check <- sapply(x, function(x) ifelse(diff(range(x[,var.par.CO2$ghg])) >= mean(x$CO2.rl), TRUE, FALSE))
+			if(co2ntrol$leak){
+				leak.flag <- sapply(CO2.pre, function(x) coef(x$lm4flux)[2]) <= 0
+				leak.flag <- !as.logical(leak.flag*CO2.range.check)
+			}
+			if(co2ntrol$relay){
+				x.sub <- lapply(which(CO2.range.check), function(y) x[[y]][CO2.pre[[y]]$row.select,])
+				x[which(CO2.range.check)] <- x.sub
+			}
 		}
+		## run the CO2 flux estimation via flux.conv and gflux
+		CO2.res <- lapply(CO2.pre, function(x) flux.conv(x, ghg = "CO2", r2.qual = r2.qual$CO2, nrmse.lim = nrmse.lim$CO2, out.unit = out.unit$CO2, elementar = elementar, hardflag = hardflag))
+		flux.res$CO2 <- CO2.res
+		## when pv values are to be reported… extract them
+		if(p.values){
+			CO2.pv <- sapply(CO2.res, function(x) coef(summary(x$fl.dat$lm4flux))[2,4])
+			CO2.pv <- as.vector(symnum(CO2.pv, corr=FALSE, cutpoints = c(0,.001,.01,.05,.1,1), symbols = c("***","**","*","."," ")))
+		}
+		## make table for CO2
+		CO2.table <- t(sapply(CO2.res, function(x) unlist(x$fluss[2:8])))
+		CO2.units <- sapply(CO2.res, function(x) x$unit)
+		CO2.table <- data.frame(CO2.units, CO2.pv, CO2.table)
+		CO2.table$leak.f <- leak.flag*1
+		CO2.table$rl <- CO2.rl
+		names(CO2.table)[-c(1:2)] <- paste("CO2.", names(CO2.table)[-c(1:2)], sep="")
+		flux.table <- data.frame(flux.table, CO2.table)
 	}
-	## run the outlier detection and elimination routine (for details see flux.odae)
-	flux.pre <- lapply(x, function(x) flux.odae(x, var.par = var.par, min.allowed = min.allowed, max.nrmse = max.nrmse))
-	## run the flux calculation via flux.conv and gflux (consult these functions
-	## for details)
-	flux.res <- lapply(flux.pre, function(x) flux.conv(x, ghg = ghg, r2.qual = r2.qual, nrmse.lim = nrmse.lim, out.unit = out.unit, elementar = elementar, hardflag = hardflag))
-	## add leak flag to the flux.res fluss parts
-	for(i in c(1:length(flux.res))){
-		flux.res[[i]]$fluss$leak.f <- leak.flag[i]
+	cat(".",sep="")
+	## CH4 stuff
+	if(length(ch)!=0){
+		## do prep for CH4
+		var.par.CH4 <- var.par
+		## check for gcq and add 0 if necessary
+		if(sum(names(var.par.CH4)=="CH4.gcq")==0) {
+			var.par.CH4$CH4.gcq = 0
+			warning("CH4 GC quality flags have been set to zero")
+		}
+		# update ch
+		ch <- grep("CH4", names(var.par.CH4))
+		##		
+		names(var.par.CH4)[names(var.par.CH4)=="CH4"] <- "ghg"
+		names(var.par.CH4)[names(var.par.CH4)=="CH4.gcq"] <- "gc.qual"
+		names(var.par.CH4)[names(var.par.CH4)=="CH4.rl"] <- "rl"
+		CH4.pre <- lapply(x, function(x) flux.odae(x, var.par = c(var.par.CH4[ch], vp), min.allowed = min.allowed, max.nrmse = max.nrmse$CH4, rl="CH4.rl"))
+		## run the CH4 flux estimation via flux.conv and gflux
+		CH4.res <- lapply(CH4.pre, function(x) flux.conv(x, ghg = "CH4", r2.qual = r2.qual$CH4, nrmse.lim = nrmse.lim$CH4, out.unit = out.unit$CH4, elementar = elementar, hardflag = hardflag))
+		if(exists("leak", hardflag)){
+			if(hardflag$leak){
+				if(length(co)==0){warning("leakage can only be evaluated and hardflagged if CO2 data are given")}
+				else{
+					for(i in c(1:length(CH4.res))){
+						CH4.res[[i]]$fluss$flux <- ifelse(leak.flag[i], CH4.res[[i]]$fluss$flux, NA)
+					}
+				}	
+			}	
+		}
+		flux.res$CH4 <- CH4.res
+		## when pv values are to be reported… extract them
+		if(p.values){	
+			CH4.pv <- sapply(CH4.res, function(x) coef(summary(x$fl.dat$lm4flux))[2,4])
+			CH4.pv <- as.vector(symnum(CH4.pv, corr=FALSE, cutpoints = c(0,.001,.01,.05,.1,1), symbols = c("***","**","*","."," ")))
+		}
+		## make table for CH4
+		CH4.table <- t(sapply(CH4.res, function(x) unlist(x$fluss[2:8])))
+		CH4.units <- sapply(CH4.res, function(x) x$unit)
+		CH4.table <- data.frame(CH4.units, CH4.pv, CH4.table)
+		CH4.table$rl <- CH4.rl
+		names(CH4.table)[-c(1:2)] <- paste("CH4.", names(CH4.table)[-c(1:2)], sep="")
+		flux.table <- data.frame(flux.table, CH4.table)	}
+	cat(".",sep="")
+	## N2O stuff
+	if(length(no)!=0){
+		## do prep for N2O
+		var.par.N2O <- var.par
+		## check for gcq and add 0 if necessary
+		if(sum(names(var.par.N2O)=="N2O.gcq")==0) {
+			var.par.N2O$N2O.gcq = 0
+			warning("N2O GC quality flags have been set to zero")
+		}
+		# update no
+		no <- grep("N2O", names(var.par.N2O))
+		##
+		names(var.par.N2O)[names(var.par.N2O)=="N2O"] <- "ghg"
+		names(var.par.N2O)[names(var.par.N2O)=="N2O.gcq"] <- "gc.qual"
+		N2O.pre <- lapply(x, function(x) flux.odae(x, var.par = c(var.par.N2O[no], vp), min.allowed = min.allowed, max.nrmse = max.nrmse$N2O, rl="N2O.rl"))
+		## run the N2O flux estimation via flux.conv and gflux
+		N2O.res <- lapply(N2O.pre, function(x) flux.conv(x, ghg = "N2O", r2.qual = r2.qual$N2O, nrmse.lim = nrmse.lim$N2O, out.unit = out.unit$N2O, elementar = elementar, hardflag = hardflag))
+		if(exists("leak", hardflag)){
+			if(hardflag$leak){
+				if(length(co)==0){warning("leakage can only be evaluated and hardflagged if CO2 data are given")}
+				else{
+					for(i in c(1:length(N2O.res))){
+						N2O.res[[i]]$fluss$flux <- ifelse(leak.flag[i], N2O.res[[i]]$fluss$flux, NA)
+					}
+				}	
+			}	
+		}		
+		flux.res$N2O <- N2O.res
+		## when pv values are to be reported… extract them
+		if(p.values){
+		N2O.pv <- sapply(N2O.res, function(x) coef(summary(x$fl.dat$lm4flux))[2,4])
+		N2O.pv <- as.vector(symnum(N2O.pv, corr=FALSE, cutpoints = c(0,.001,.01,.05,.1,1), symbols = c("***","**","*","."," ")))
+		}
+		## make table for N2O
+		N2O.table <- t(sapply(N2O.res, function(x) unlist(x$fluss[2:8])))
+		N2O.units <- sapply(N2O.res, function(x) x$unit)
+		N2O.table <- data.frame(N2O.units, N2O.pv, N2O.table)
+		N2O.table$rl <- N2O.rl
+		names(N2O.table)[-c(1:2)] <- paste("N2O.", names(N2O.table)[-c(1:2)], sep="")
+		flux.table <- data.frame(flux.table, N2O.table)
 	}
-	## make table
-	flux.table <- t(sapply(flux.res, function(x) unlist(x$fluss[1:8])))
-	units <- sapply(flux.res, function(x) x$unit)
-	flux.table <- data.frame(nmes, unit = units, flux.table, leak.f = leak.flag)
-	if(p.values){
-		pv <- sapply(flux.res, function(x) coef(summary(x$fl.dat$lm4flux))[2,4])
-		flux.table$pv <- pv
-	}
-	## hand through data
-	htd <- t(sapply(flux.res, function(x) x$fl.dat$dat.out))
-	flux.table <- cbind(flux.table, htd[,-c(1:2)])
-	res <- list(call = cl, flux.res = flux.res, flux.table = flux.table, range.lim = range.lim)
-	class(res) <- "fluss"
+	cat(".",sep="")
+	## handthrough data
+	sel <- c(!is.na(flux.res))
+	htd <- t(sapply(flux.res[[ which(sel==TRUE)[1] ]], function(x) x$fl.dat$dat.out))
+	flux.table <- data.frame(flux.table, htd)
+	flux.table <- flux.table[,-grep("htd", names(flux.table))[c(1:2)]]
+	## compile results for output
+	res <- list(flux.res = flux.res, flux.table = flux.table, range.lim = range.lim)
+	class(res) <- "fluxes"
 	return(res)
 }
-

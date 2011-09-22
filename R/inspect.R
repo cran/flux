@@ -1,9 +1,10 @@
 inspect <-
-function(x, what, sustain = NULL, retain = FALSE){
+function(x, what, retain = FALSE){
 	z <- x$tables
 	if(is.list(what)){
-		if(!is.null(sustain)){names(what) <- paste(sustain, names(what), sep=".")}
-		those <- match(names(what), names(z))
+		those <- sapply(names(what), function(x) grep(x, names(z)))
+		check <- sapply(those, length)
+		if(length(which(check!=1))!=0){stop(paste("The items ", which(check!=1), "in 'what' are ambiguously defined. Please check your function call"))}
 		for(i in c(1:length(what))){
 			z[[those[i]]] <- z[[those[i]]][-what[[i]],]
 		}
@@ -12,8 +13,8 @@ function(x, what, sustain = NULL, retain = FALSE){
 		return(x)
 	}
 	else{
-		if(!is.null(sustain)){what <- paste(sustain, what, sep=".")}
-		if(is.character(what)){what <- match(what, names(z))}
+		if(is.character(what)){what <- sapply(what, function(x) grep(x, names(z)))}
+		if(length(what)==0){stop(paste("'what' is ambiguously defined. Please check your function call"))}
 		return(z[what])
 	}
 }

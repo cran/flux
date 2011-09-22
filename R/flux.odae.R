@@ -19,6 +19,7 @@ function(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL){
 	stv <- match(c("ghg", "time", "gc.qual", "area", "volume"), names(dat))
 	handthrough <- names(which(sapply(var.par[-stv], is.character)))
 	dat.out <- sapply(c("area", "volume", handthrough), function(x) mean(dat[,x], na.rm=TRUE))
+	names(dat.out) <- paste("htd", names(dat.out), sep=".")
 	## extract variables from dat for later flux calculation
 	dat <- dat[,c("ghg", "time", "gc.qual", "area", "volume", "t.air", "p.air")]
 	## getting all possible combinations of at least three x

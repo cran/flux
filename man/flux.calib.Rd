@@ -5,7 +5,7 @@
 Determine calibration measurement ranges according to the dates of real measurements
 }
 \description{
-The function basically takes calibration gas measurements and extracts the calibration gas measurements that have been carried out temporally close to a real data measurement and calculates the standard deviation of the calibration gas measurements. The obtained range limits can be used in \code{\link{flux}} or \code{\link{fluxes}} as a quality parameter (via \code{range.lim}).
+The function basically takes calibration gas measurements and extracts the calibration gas measurements that have been carried out temporally close to a real data measurement and calculates the standard deviation of the calibration gas measurements. The obtained range limits can be used in \code{\link{flux}} as a quality parameter (via \code{range.lim}).
 }
 
 \usage{

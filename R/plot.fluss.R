@@ -5,6 +5,10 @@ function(x, subs, dims, folder = getwd(), xlims = NULL, ...){
 	xt <- x$flux.table
 	# prepare plot size
 	d <- dims*200*5/360
+	# prepare xlims when xlims is NULL
+	if(is.null(xlims)){
+		xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
+	}
 	# check on subs
 	if(is.null(subs)){
 		# start graphics device

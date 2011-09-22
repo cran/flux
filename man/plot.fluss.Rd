@@ -2,6 +2,7 @@
 \name{plot.fluss}
 \alias{plot.fluss}
 \alias{plot.flux}
+\alias{plot.fluxes}
 \title{
 Functions for bulk plotting of concentration change with time as kind of 
 diagnostic plots for flux rate calculations
@@ -17,6 +18,9 @@ this package.
 \method{plot}{fluss}(x, subs, dims, folder = getwd(), xlims = NULL, ...)
 
 \method{plot}{flux}(x, zero.line, note = "", margin = 0.2, xlims = NULL, ...)
+
+\method{plot}{fluxes}(x, dims, ghg = "all", subs = NULL, folder = getwd(), 
+xlims = NULL, ask = TRUE, ...)
 }
 
 \arguments{
@@ -24,7 +28,7 @@ this package.
 Object of class \code{fluss} that is returned by \code{\link{flux}} or object of class \code{flux} that is returned by \code{\link{flux.conv}}. In case of the latter, the function has to be applied to a list of flux extimation results via \code{\link[base]{lapply}} or the like.
 }
   \item{subs}{
-Single character value or character value specifying the factors that shall be used for subsetting the plots into plates (that are stored as pdf files to a folder specified in \code{folder}). Must be names of columns of the original data that have been used to partition the data into chunks and that are part of the naming of the data chunks (see \code{\link{flux}} for details.). When there are only few chamber measurements that shall be plotted to the screen set \code{subs} to NULL.
+Single character value or character value specifying the factors that shall be used for subsetting the plots into plates (that are stored as pdf files to a folder specified in \code{folder}). Must be names of columns of the original data that have been used to partition the data into chunks and that are part of the naming of the data chunks (see \code{\link{flux}} for details.). When there are only few chamber measurements that shall be plotted to the screen set \code{subs} to NULL. This is default behaviour for \code{plot.fluxes}
 }
   \item{dims}{
 Integer vector with two elements that specify the mfrow setting (see \code{\link[graphics]{par}} for details) during the plotting of the single plates into pdf files. For all single plots to fit on the plate the product of the two entries has to be equal or higher the number of chamber measurements that are in the data in each partition according to \code{subs}.
@@ -46,6 +50,12 @@ A note that shall appear in the plots. Typically not a fixed value but a value t
 }
   \item{margin}{
 Numeric between 0 and 1. Specifies the empty space within the diagnostic plots on the y-axis. 
+}
+  \item{ghg}{
+Character value or an up to three entry vector specifying which ghg should be plotted. Note that only ghg fluxes that were estimated can be plotted.
+}
+  \item{ask}{
+Logical; if TRUE, the user is asked before starting to plot the concentration data for the next ghg, see \code{\link[graphics]{par}}(ask=.) and examples.
 }
 }
 
@@ -73,27 +83,24 @@ data(tt.pre)
 gcd <- tt.pre[tt.pre$sampletype_a=="P",]
 
 ## partition the data into data tables per chamber measurement
-# first tell which columns of the data you want to carry on
-columns <- c("date", "veg", "spot", "time_min", "temp_dC", "cham_area", 
-"cham_vol", "CO2ppm", "CO2Code", "CH4ppb", "CH4Code", "N2Oppb", "N2OCode")
 # then do the partitioning
-gcd.parts <- conz.prep(gcd, columns, factors = c("date", "spot", "veg"), 
+gcd.parts <- conz.prep(gcd, factors = c("date", "spot", "veg"), 
 nmes = c("date", "veg", "spot"))
 
 ## calculate flux rates for methane
 # first define CH4 range limit (alternatively use flux.calib)
 CH4.lim <- 30
 # do the flux rate estimation
-vp.CH4 <- list(ghg = "CH4ppb", time = "time_min", gc.qual = "CH4Code", 
+vp.CH4 <- list(CH4 = "CH4ppb", time = "time_min", CH4.gcq = "CH4Code", 
 volume = "cham_vol", t.air = "temp_dC", area = "cham_area", p.air = 101325)
-flux.CH4 <- flux(gcd.parts, var.par = vp.CH4, ghg = "CH4", co2ntrol = NULL)
+flux.CH4 <- flux(gcd.parts, var.par = vp.CH4, co2ntrol = NULL, 
+range.lim=CH4.lim)
 
 ## look at the results table
 flux.CH4
 
 ## plot the concentration-change-with-time-plots as kind of diagnostic
-plot(flux.CH4, subs = NULL, dims = c(3,6))
-
+plot(flux.CH4, dims = c(3,6))
 }
 
 \keyword{ hplot }
