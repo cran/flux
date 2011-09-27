@@ -22,6 +22,8 @@ function(dat, var.par, min.allowed = 3, max.nrmse = 0.1, rl = NULL){
 	names(dat.out) <- paste("htd", names(dat.out), sep=".")
 	## extract variables from dat for later flux calculation
 	dat <- dat[,c("ghg", "time", "gc.qual", "area", "volume", "t.air", "p.air")]
+	## sort dat according to time column (just in case the dara came weird)
+	dat <- dat[order(dat$time),]
 	## getting all possible combinations of at least three x
 	vers <- unlist(lapply(c(min.allowed:nrow(dat)), function(x) combn(c(1:nrow(dat)), x, simplify=FALSE)), recursive=FALSE)
 	vers <- lapply(vers, "sort")

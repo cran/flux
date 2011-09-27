@@ -8,7 +8,7 @@ function(dat, columns = NULL, factors, nmes, min.cm = 3){
 	if(is.null(columns)){ columns <- c(1:ncol(dat))}
 	## separate into tables per chamber measurement
 	conz.parts <- by(dat[,columns], sellist, function(x) x[])
-	## in the prozess empty tables are produced when a comination
+	## in the prozess empty tables are produced when a combination
 	## of factors in sellist has no data. the empty tables are
 	## eliminated now
 	flux.sel <- unlist(lapply(conz.parts, function(x) !is.null(x)))
@@ -18,11 +18,9 @@ function(dat, columns = NULL, factors, nmes, min.cm = 3){
 	flux.sel <- sapply(conz.parts, function(x) nrow(x)>=min.cm)
 	conz.parts <- conz.parts[flux.sel]
 	## do the naming (for easy access to the data)
-	names(conz.parts) <- sapply(conz.parts, function(x) paste(sapply(x[][1,nmes], as.character), sep=".", collapse="."))
-	nams <- t(sapply(strsplit(names(conz.parts), "\\."), function(x) x[1:length(nmes)]))
-	nams <- data.frame(nams)
-	nams$all <- names(conz.parts)
-	names(nams) <- c(nmes, "all")
+	nams <- data.frame(t(sapply(conz.parts, function(x) sapply(x[][1,nmes], as.character))))
+	nams$all <- apply(nams, 1, function(x) paste(sapply(x, as.character), sep=".", collapse="."))
+	names(conz.parts) <- nams$all
 	conz.parts <- list(tables = conz.parts, nmes = nams)
 	return(conz.parts)
 } 

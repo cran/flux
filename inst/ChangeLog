@@ -1,6 +1,24 @@
 FLUX VERSIONS
 
 
+Version 0.1-6
+
+	* Bug fix to conz.prep. Before certain date 
+	formats (including "." as separators) could cause
+	problems.
+	
+	* plot.fluxes now warns when the number of
+	figures does not match the number of plot
+	positions on the sheets.
+	
+	* Update to flux.odae. The concentration 
+	measurements are now ordered according to the
+	closure time. Just in case the data are provided
+	in wrong order. The optimization procedure did 
+	this always but when plotting the correct order 
+	is necessary.
+	
+
 Version 0.1-5
 
 	* The functionality of flux() and fluxes() 

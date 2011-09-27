@@ -23,14 +23,16 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
    		if (ask) {
         	# start graphics device
         	dev.new(width=d[2], height=d[1])
-#        	if(sum(show)>1){
-#        		devAskNewPage(TRUE)
-#        	}    	
+        	if(sum(show)>1){
+        		devAskNewPage(TRUE)
+        	}    	
     	}
     	if(show["CO2"]){
     		if(!ask) dev.new(width=d[2], height=d[1])
 			# select data
 			xr <- xres$CO2
+			# check consistency
+			if(length(xr)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 			# prepare xlims when xlims is NULL
 			if(is.null(xlims)){
 				xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
@@ -46,6 +48,8 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 			if(!ask) dev.new(width=d[2], height=d[1])
 			# select data
 			xr <- xres$CH4
+			# check consistency
+			if(length(xr)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 			# prepare xlims when xlims is NULL
 			if(is.null(xlims)){
 				xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
@@ -61,6 +65,8 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 			if(!ask) dev.new(width=d[2], height=d[1])
 			# select data
 			xr <- xres$N2O
+			# check consistency
+			if(length(xr)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 			# prepare xlims when xlims is NULL
 			if(is.null(xlims)){
 				xlims <- range(as.vector(sapply(xr, function(x) range(x$fl.dat$orig.dat$time))))
@@ -86,6 +92,8 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				xr <- xres$CO2
 				# subset fluxes and names
 				tmp.flux <- xr[spots==j]
+				# check consistency
+				if(length(tmp.flux)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
@@ -108,6 +116,8 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				xr <- xres$CH4
 				# subset fluxes and names
 				tmp.flux <- xr[spots==j]
+				# check consistency
+				if(length(tmp.flux)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
@@ -130,6 +140,8 @@ function(x, dims, ghg = "all", subs = NULL, folder = getwd(), xlims = NULL, ask 
 				xr <- xres$N2O
 				# subset fluxes and names
 				tmp.flux <- xr[spots==j]
+				# check consistency
+				if(length(tmp.flux)!=prod(dims)){warning("Number of subfigures and number of positions on plot did not match.")}
 				# prepare names
 				tmp.nms <- rownames(xt)[spots==j]
 				# start pdf device
