@@ -2,7 +2,7 @@
 export(auc, chop, export, flux, fluxx, gflux, gpp, inspect, reco)
 
 ## export regular functions with dot names
-export(flux.calib)
+export(flux.calib, flux.odae, flux.conv, mf.flux)
 
 ## Registration of S3 methods
 import(stats)
@@ -13,6 +13,7 @@ S3method(plot, flux)
 S3method(plot, fluxes)
 S3method(plot, fluxx)
 S3method(plot, fluxxes)
+S3method(plot, gpp)
 # print: base
 S3method(print, fluss)
 S3method(print, fluxes)

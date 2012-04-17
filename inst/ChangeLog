@@ -1,6 +1,23 @@
 FLUX VERSIONS
 
 
+Version 0.2-1
+
+  * Minor bug fixes to mf.flux, fluxx and to the 
+  namespace. Added methods for evaluating linearity
+  to mf.flux and a shortcut to find the linear part
+  under certain cicumstances.
+
+  * New argument to plot.gpp for allowing bulk 
+  plotting
+
+  * Examples added to the help for mf.flux, fluxx, 
+  gpp, reco, and plot.gpp
+
+  * New example data for use in help: tt.nee and 
+  tt.flux
+
+
 Version 0.2-0
 
 	* Housekeeping and bug fixes to many functions.

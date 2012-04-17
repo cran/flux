@@ -46,7 +46,7 @@ function(x, var.par, subset, asterisks = FALSE, loop = "auto", ...){
 	islog <- sapply(ghg.res[[1]]$fluss, is.logical)
 	ischar <- sapply(ghg.res[[1]]$fluss, is.character)
 	ghg.tab.num <- t(sapply(ghg.res, function(x) unlist(x$fluss[isnum])))
-	ghg.tab.chr <- t(sapply(ghg.res, function(x) x$fluss[ischar]))
+	ghg.tab.chr <- t(sapply(ghg.res, function(x) unlist(x$fluss[ischar])))
 	ghg.tab.log <- data.frame(t(sapply(ghg.res, function(x) unlist(x$fluss[islog]))))*1
 	ghg.table <- data.frame(pv, ghg.tab.log, ghg.tab.chr, ghg.tab.num)
 	names(ghg.table) <- paste(ghgs, names(ghg.table), sep=".")
@@ -56,6 +56,7 @@ function(x, var.par, subset, asterisks = FALSE, loop = "auto", ...){
 	htd.chr <- t(sapply(ghg.res, function(x) unlist(x$out[!isnum])))
 	htd.num <- t(sapply(ghg.res, function(x) unlist(x$out[isnum])))
 	flux.table <- data.frame(nmes, ghg.table, htd.chr, htd.num)
+	flux.table <- flux.table[,-grep("\\.1", names(flux.table))]
 	
 	## compile results for output
 	flux.res <- vector("list", 1)

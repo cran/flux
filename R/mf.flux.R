@@ -1,5 +1,9 @@
 mf.flux <- 
-function(x, var.par, time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pdk = 0.5, min.dp = 20, nrmse.lim = 0.1, r2.qual = 0.9, range.lim = 5, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE)){
+function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pdk = 0.5, min.dp = 20, nrmse.lim = 0.1, r2.qual = 0.9, range.lim = 5, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE)){
+	## which method to use
+	METHODS <- c("r2", "rmse", "AIC")
+	method <- pmatch(method, METHODS)
+	
 	## prepare input
 	n <- nrow(x)
 	# function vp that realises the compilation of dat for further use
@@ -33,73 +37,121 @@ function(x, var.par, time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pd
 	
 	## extract variables from x(dat) for flux calculation
 	x <- dat[,c("ghg", "time", "area", "volume", "t.air", "p.air")]
-	# perpare time entries
+	# prepare time entries
 	x$time <- as.vector(x$time - min(x$time))
 	x$time <- x$time * iv
+	x <- x[order(x$time),]
+	
+	## other preparations
+	# put original data aside for later reporting
+	inn <- x
+	# get original ghg.range
+	ghg.range <- range(x$ghg, na.rm=TRUE)
 	
 	## check for high frequency strong fluctuations and remove data points
-	ghg.range <- range(x$ghg)
-	time.max <- max(x$time)
-	rsd <- runsd(x$ghg, ceiling(time.max*wndw))/diff(ghg.range)
-	x$hff <- rsd >= wndw
-	inn <- x
-	x <- x[!x$hff,]
-	
-	## getting the best linear part
-	# derive minimum number of measurements
-	n <- nrow(x)
-	ndk <- ifelse((n*pdk) >= min.dp, ceiling(n*pdk), min.dp)
-	# with moving windows of various lengths
-	if(ndk >= n){  
-		ndk <- n-1
-		warning("Number of entries <= min.dp and min.dp has been automatically adjusted to n-1")
+	# first check for unbalanced concentration measurements
+	# in this case hff is defined all which is not the prevailing value
+	unik <- summary(as.factor(x$ghg))
+	if(max(unik)/length(x$ghg) > pdk){
+		conz <- as.numeric(names(sort(unik, decreasing=TRUE)))[1]
+		x$hff <- x$ghg!=conz
 	}
-	winds <- c(ndk:n)
-	indizes <- lapply(winds, function(y) lapply(c(1:n), function(x) seq(x,(x+y)))[1:(n-y)])
-	indizes <- unlist(indizes, recursive=FALSE)
-	rs <- sapply(indizes, function(y) summary(lm(ghg ~ time, data=x[y,]))$r.squared)
-	sel <- indizes[[order(rs, decreasing = TRUE)[1]]]
-	lm4flux <- lm(ghg ~ time, data = x[sel,])
-	
-	## flux calculation
-	# prepare
-	time.range <- range(lm4flux$model[,2])
-	dc <- diff(predict(lm4flux, newdata = data.frame(time = time.range)))
-	m <- 44.01
-	T <- mean(x$t.air, na.rm=TRUE)
-	V <- x$volume[1]
-	A <- x$area[1]
-	t <- diff(time.range)
-	t <- switch(time.unit, S = t/60/60, M = t/60, H = t)
-	p <- mean(x$p.air, na.rm=TRUE)
-	# do calculation
-	flux <- gflux(ct=dc, T=T, V=V, A=A, M=m, t=t, p=p)
-	flux <- flux/1e+6
-	
-	## according to the output.unit the unit is changed
-	## per default the function tries to guess a unit that best reflects the actual value
-	fluxes <- unlist(list(fg = flux*1e+15, pg = flux*1e+12, ng = flux*1e+9, mug = flux*1e+6, mg = flux*1e+3, g = flux, kg = flux/1e+3))
-	if(out.unit == "auto"){
-		flux <- fluxes[(abs(fluxes) < 10) & (abs(fluxes) >= 0.01)]
-		out.unit <- names(flux)
+	# if there is no prevailing value check hff according to running sd compared to range
+	# but only when range.lim <= ghg.range
+	else{
+		if(diff(ghg.range) > range.lim){
+			time.max <- max(x$time)
+			rsd <- runsd(x$ghg, ceiling(time.max*wndw))/diff(ghg.range)
+			x$hff <- rsd >= wndw
+		}
+		else{
+			x$hff <- FALSE
+		}
+	}
+	x <- x[!x$hff,]
+		
+	## check range limit and do shortcut if range of concentrations is below range.lim
+	if(hardflag$range & (diff(ghg.range) <= range.lim)){
+		flux <- 0
+		x$ghg <- rep(mean(x$ghg), length(x$ghg))
+		lm4flux <- lm(ghg ~ time, data = x)
+		if(out.unit == "auto"){ out.unit <- "g" }
+		r2 <- 1
+		range.m <- diff(ghg.range)
+		nrmse <- 0
+		n.inn <- length(inn[,1])
+		n.out <- n.inn
+		podpu <- 1
 	}
 	else{
-		flux <- fluxes[out.unit]
+		## getting the best linear part
+		# derive minimum number of measurements
+		n <- nrow(x)
+		ndk <- ifelse((n*pdk) >= min.dp, ceiling(n*pdk), min.dp)
+		# with moving windows of various lengths
+		if(ndk >= n){  
+			ndk <- n-1
+			warning("Number of entries <= min.dp and min.dp has been automatically adjusted to n-1")
+		}
+		winds <- c(ndk:n)
+		indizes <- lapply(winds, function(y) lapply(c(1:n), function(x) seq(x,(x+y)))[1:(n-y)])
+		indizes <- unlist(indizes, recursive=FALSE)
+		if(method==1){
+			rs <- sapply(indizes, function(y) summary(lm(ghg ~ time, data=x[y,]))$r.squared)
+			sel <- indizes[[order(rs, decreasing = TRUE)[1]]]
+		}
+		if(method==2){
+			lms <- lapply(indizes, function(y) lm(ghg ~ time, data=x[y,]))
+			rmse <- unlist(lapply(lms, function(x) sqrt(sum(residuals(x)^2)/summary(x)$df[2])))
+			sel <- indizes[[order(rmse)[1]]]
+		}
+		if(method==3){
+			AIC <- sapply(indizes, function(y) AIC(lm(ghg ~ time, data=x[y,])))
+			sel <- indizes[[order(AIC)[1]]]
+		}				
+		# actually get the best model
+		lm4flux <- lm(ghg ~ time, data = x[sel,])
+
+		## flux calculation
+		# prepare
+		time.range <- range(lm4flux$model[,2])
+		dc <- diff(predict(lm4flux, newdata = data.frame(time = time.range)))
+		m <- 44.01
+		T <- mean(x$t.air, na.rm=TRUE)
+		V <- x$volume[1]
+		A <- x$area[1]
+		t <- diff(time.range)
+		t <- switch(time.unit, S = t/60/60, M = t/60, H = t)
+		p <- mean(x$p.air, na.rm=TRUE)
+		# do calculation
+		flux <- gflux(ct=dc, T=T, V=V, A=A, M=m, t=t, p=p)
+		flux <- flux/1e+6
+
+		## according to the output.unit the unit is changed
+		## per default the function tries to guess a unit that best reflects the actual value
+		fluxes <- unlist(list(fg = flux*1e+15, pg = flux*1e+12, ng = flux*1e+9, mug = flux*1e+6, mg = flux*1e+3, g = flux, kg = flux/1e+3))
+		if(out.unit == "auto"){
+			flux <- fluxes[(abs(fluxes) < 10) & (abs(fluxes) >= 0.01)]
+			out.unit <- names(flux)
+		}
+		else{
+			flux <- fluxes[out.unit]
+		}
+
+		## extract model parameters for flagging and output
+		# extract model r2.adj, range, and nrmse
+		r2 <- summary(lm4flux)$r.squared
+		range.m <- diff(range(lm4flux$model[,1], na.rm=TRUE))
+		if(range.m == 0){ range.m <- 0.001 }
+		nrmse <- sqrt(sum(residuals(lm4flux)^2)/summary(lm4flux)$df[2])/range.m
+		# extract model n, original n, and percentage of data points used
+		n.out <- length(lm4flux$model[,1])
+		n.inn <- length(inn[,1])
+		podpu <- n.out/n.inn		
 	}
-	
-	## extract model parameters for flagging and output
-	# extract model r2.adj, range, and nrmse
-	r2 <- summary(lm4flux)$r.squared
-	range.m <- diff(range(lm4flux$model[,1], na.rm=TRUE))
-	nrmse <- sqrt(sum(residuals(lm4flux)^2)/summary(lm4flux)$df[2])/diff(range(lm4flux$model[1], na.rm=TRUE))
-	# extract model n, original n, and percentage of data points used
-	n.out <- length(lm4flux$model[,1])
-	n.inn <- length(inn[,1])
-	podpu <- n.out/n.inn
 	
 	## flagging
 	# set the r2-quality flag and hardflag flux (set to NA) if set so
-	if(is.null(hardflag)) { hardflag <- list(dummy = 1) }
 	r2.f <- ifelse(r2 >= r2.qual, TRUE, FALSE)
 	if(exists("r2", hardflag)){
 		if(hardflag$r2){
@@ -108,11 +160,9 @@ function(x, var.par, time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pd
 	}
 	# set the range-quality flag and hardflag (set to 0) flux if set so
 	if(is.na(range.lim)){range.lim <- 0}
-	range.f <- ifelse(range.m >= range.lim, TRUE, FALSE)
-	if(exists("range", hardflag)){
-		if(hardflag$range){
-			flux <- ifelse(range.f, flux, 0)
-		}
+	range.f <- ifelse(diff(ghg.range) >= range.lim, TRUE, FALSE)
+	if(hardflag$range){
+		flux <- ifelse(range.f, flux, 0)
 	}
 	# set the nrmse-quality flag
 	nrmse.f <- ifelse(nrmse <= nrmse.lim, TRUE, FALSE)

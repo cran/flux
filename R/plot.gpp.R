@@ -1,6 +1,6 @@
-plot.gpp <- function(x, nm = "", ...){
+plot.gpp <- function(x, nm = "", single.pane = TRUE, ...){
 	# prepare plotting region
-	par(mfrow=c(1,3), las=1, pty="s")
+	if(single.pane){par(mfrow=c(1,3), las=1, pty="s")}
 	### plot only Reco
 	plot(R ~ Temp, x$mr$model, main=paste(nm, "Reco model"), ...)
 	t.range <- range(x$mr$model$Temp)

@@ -9,7 +9,7 @@ Plot diagnostic plots for GPP (NEE) models derived with reco and gpp.
 }
 
 \usage{
-\method{plot}{gpp}(x, nm = "", ...)
+\method{plot}{gpp}(x, nm = "", single.pane = TRUE, ...)
 }
 
 \arguments{
@@ -17,7 +17,10 @@ Plot diagnostic plots for GPP (NEE) models derived with reco and gpp.
 Object of class \code{gpp} that is returned by \code{\link{gpp}}.
 }
   \item{nm}{
-The three panels of the resulting plot are already be named. However, if you'd like to add something you can do it here.
+The three panels of the resulting plot are already named. However, if you'd like to add something you can do it here.
+}
+  \item{single.pane}{
+For bulk plotting of several models to one device it is necessary to \code{FALSE} \code{single.pane}. See example at \code{\link{gpp}}
 }
   \item{\dots}{
 Further arguments passed to \code{\link[graphics]{plot.default}}.
@@ -38,6 +41,10 @@ Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>
 
 \seealso{
 \code{\link{chop}}, \code{\link{fluxx}}, \code{\link{gpp}}, \code{\link{reco}}
+}
+
+\examples{
+## see examples at gpp
 }
 
 \keyword{ hplot }

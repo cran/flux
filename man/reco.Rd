@@ -78,4 +78,8 @@ In its current implementation the \code{lt} and \code{logistic} models are easil
 \code{\link{gpp}}
 }
 
+\examples{
+## see examples at gpp
+}
+
 \keyword{ univar }

@@ -13,7 +13,7 @@ Estimate (ghg) flux rates from online dynamic closed chamber measurements in thr
 \usage{
 fluxx(x, var.par, subset, asterisks = FALSE, loop = "auto", ...)
 
-mf.flux(x, var.par, time.unit = "S", all.through = TRUE, iv = 1, 
+mf.flux(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1, 
 wndw = 0.1, pdk = 0.5, min.dp = 20, nrmse.lim = 0.1, r2.qual = 0.9, 
 range.lim = 5, out.unit = "auto", elementar = FALSE, 
 hardflag = list(range = TRUE))
@@ -38,6 +38,9 @@ Logical or character. Set the mode how bulk estimations are run. \code{mf.flux} 
   \item{\dots}{
 Further arguments passed to \code{mf.flux}.
 }
+  \item{method}{
+Character string specifying the statistic used for finding the linear part. Partial match to \code{"r2"}, \code{"rmse"}, \code{"AIC"}. Defaults is \code{"r2"}. This tries to find the linear part whilst maximimising the number of measurements regarded.
+}
   \item{time.unit}{
 Single character giving the time unit. Will typically be seconds, thus default is \code{"S"}. Other options are \code{"M"} for minutes and \code{"H"} for hours. Be aware that fluxes will be incorrect when this setting does not reflect the time unit in your data.
 }
@@ -48,10 +51,10 @@ Logical. When \code{TRUE}, all data columns in \code{x} other than the ones need
 Numeric. Sometimes there is no time information at all but the rows in \code{x} are just numbered consecutively. The correct temporal spread is calculated inside the function when the measurement interval is specified here. Defaults to 1 which expects times to be correctly given in \code{x}.
 }
   \item{wndw}{
-Numeric between 0 and 1. Relative width of a moving window in which the standard deviation of the concentrations is calculated to identify high frequency fluctuations. See details.
+Numeric between 0 and 1. Relative width of a moving window in which the standard deviation of the concentrations is calculated to identify high frequency fluctuations. See details and next.
 }
   \item{pdk}{
-Numeric between 0 and 1. Minimum proportion of  data points to be kept. See details.
+Numeric between 0 and 1. Minimum proportion of data points to be kept. See details. In case one single concentration value exists more than \code{pdk * n} times in the data, all other data is assumed to represent high frequency fluctuations and flux is set to zero.
 }
   \item{min.dp}{
 Numeric. The minimum number of data points. Defaults to 20. If there are less rows the estimation is run anyway but a warning is issued and \code{min.dp} is automatically adjustet to n-1.
@@ -122,6 +125,36 @@ Gerald Jurasinski, \email{gerald.jurasinski@uni-rostock.de}
 
 \seealso{
 \code{\link{gpp}} and \code{\link{reco}} for further processing of the results.
+}
+
+\examples{
+\dontrun{
+## load data
+data(tt.nee)
+
+## prepare flux estimation
+# make parts with chop
+tt.parts <- chop(tt, factors=c("session", "spot"), 
+nmes=c("spot", "date", "session"), min.cm=40)
+# prepare var.par list (like with flux)
+vp <- list(CO2 = "NEE", time = "datetime", area = "area", 
+volume = "volume", t.air = "t.cham", p.air = 101325)
+
+## do the flux estimation
+# run fluxx. with lots of data it may take a while 
+# (approx. 10 sec per chamber)
+tt.flux <- fluxx(tt.parts, subset=c(1:30), vp, pdk=0.5, 
+range.lim=3, out.unit="mg")
+# inspect results table
+tt.flux
+# plot diagnostic plots
+plot(tt.flux, dims=c(4,4), subs="spot")
+# run fluxx with alternative method
+tt.fluxa <- fluxx(tt.parts, subset=c(1:30), vp, pdk=0.5, 
+range.lim=3, out.unit="mg", method="rmse")
+# inspect results
+tt.fluxa
+}
 }
 
 \keyword{ univar }
