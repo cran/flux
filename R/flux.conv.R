@@ -67,8 +67,8 @@ function(fl.dat, ghg = "CH4", r2.qual = 0.8, nrmse.lim = 0.2, out.unit = "auto",
 	}
 	## check nomba
 	## ambient values from Mace Head Ireland and global average (CO2)
-	## via http://cdiac.ornl.gov/pns/current_ghg.html as of August 1st, 2011
-	ambient <- switch(ghg, CH4 = 1870, N2O = 323, CO2 = 388.5)
+	## via http://cdiac.ornl.gov/pns/current_ghg.html as of August 16th, 2013
+	ambient <- switch(ghg, CH4 = 1874, N2O = 324, CO2 = 392.6)
 	nomba <- sum(dat[,1] <= ambient)
 	if(exists("nomba", hardflag)){
 		flux <- ifelse(nomba > hardflag$nomba, NA, flux)

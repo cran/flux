@@ -15,7 +15,7 @@ inspect(x, what, retain = FALSE)
 Object returned by \code{\link{chop}} containing tables with chamber measurement data.
 }
   \item{what}{
-Specifies the concentration measurement tables in \code{x} that ought to be inspected/altered. For inspection either give a numeric vector with the indices of the tables or a character vector with the names of the entries in \code{x}. For altering data tables (i.e. deleting some values) use a named list with the names the names of the tables and the entries either numeric values or vectors that specify the concentration measurements that shall be skipped. The function allows lazy naming (so it is possible to provide just the parts of the names that identify a certain measurement unambiguously) and checks for consistency. 
+Specifies the concentration measurement tables in \code{x} that ought to be inspected/altered. For inspection either give a numeric vector with the indices of the tables or a character vector with the names of the entries in \code{x}. For altering data tables (i.e. deleting some values) use a named list. The names refer to the names of the tables and the entries are either numeric values or vectors that specify the concentration measurements that shall be skipped. The function allows lazy naming so it is possible to provide just the parts of the names that identify a certain measurement unambiguously and checks for consistency. 
 }
   \item{retain}{
 Logical. When you alter \code{x} by giving a list structure to \code{what}, shall the original data tables be returned as well? Defaults to FALSE.

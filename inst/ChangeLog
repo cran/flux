@@ -1,6 +1,28 @@
 FLUX VERSIONS
 
 
+Version 0.2-2
+
+  * Bug fixes and extensions to gpp. The nls that
+  is used internally for fitting the non-linear
+  models can get trapped into local minima. Using
+  random starts solves that issue and assures that 
+  the best model (lowest RSS) is found.
+
+  * Polish to chop. Chopping is now faster for
+  big data sets.
+
+  * Addition to mf.flux. Flux estimation can now
+  be done consecutively as well. Further, bug fixes
+  to mf.flux. Long concentration measurement series
+  could cause an error. Now these are handled 
+  correctly. Also, fixed intervals are handled 
+  better now.
+
+  * Bug fix (new argument) to auc. Catches possible
+  errors in data structure (unordered x) of the 
+  input data.
+
 Version 0.2-1
 
   * Minor bug fixes to mf.flux, fluxx and to the 

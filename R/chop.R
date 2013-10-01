@@ -5,7 +5,7 @@ function(dat, factors, nmes = NULL, min.cm = 3){
 	## make the list for the by function
 	sellist <- lapply(c(1:length(factors)), function(x) dat[,factors[x]])
 	## separate into tables per chamber measurement
-	conz.parts <- split(dat, sellist)
+	conz.parts <- split(dat, sellist, drop=TRUE)
 	## tables with less then a specified number of concentration
 	## measurements (via min.cm) are eliminated
 	flux.sel <- sapply(conz.parts, function(x) nrow(x)>=min.cm)

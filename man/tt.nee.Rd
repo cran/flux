@@ -4,10 +4,10 @@
 \alias{tt.flux}
 \docType{data}
 \title{
-Medium frequency concentration data and fluxes from dynamic closed chamber measurements
+Medium frequency concentration data and fluxes from non-steady state closed chamber measurements
 }
 \description{
-The data comes from the Trebeltal / Northeastern Germany and has been recorded with flexible transparent and opaque dynamic closed chambers in 2011. 
+The data comes from the Trebeltal / Northeastern Germany and has been recorded with flexible transparent and opaque non-steady state closed chambers in 2011. 
 }
 
 \usage{
@@ -18,7 +18,7 @@ data(tt.flux)
 \format{
 \code{tt.nee} is a \code{\link[base]{data.frame}} with 18 variables representing 14388 CO2 concentration measurements from 104 chamber placements.
 
-\code{tt.flux} is a results table represnting fluxes estimated with \code{\link{fluxx}} from \code{tt.nee} with 28 columns and 104 rows (= number of chamber placements in \code{tt.nee}). Contains many variables from \code{tt.nee}. The additional ones start with item ???.
+\code{tt.flux} is a results table representing fluxes estimated with \code{\link{fluxx}} from \code{tt.nee} with 28 columns and 104 rows (= number of chamber placements in \code{tt.nee}). Contains many variables from \code{tt.nee}.
   
   \describe{
     \item{\code{date}}{Factor giving the date of field sampling, format is "\%Y-\%m-\%d".}

@@ -1,8 +1,12 @@
-reco <- function(R, Temp, Tref = 10, T0 = -46.02, method = "all"){
+reco <- function(R, Temp, Tref = 10, T0 = -46.02, method = "all", min.dp = 6){
 	## transform temperatures
 #	Temp <- Temp + 273.15
 #	Tref <- Tref + 273.15
 #	T0 <- T0 + 273.15
+	## check number of cm
+	if(length(R) < min.dp){
+		stop("Not enough concentration measurements")
+	}
 	## linear model
 	res <- list(linear = lm(R ~ Temp))
 	## prepare start value for Rref (global, t1 here)
@@ -13,14 +17,21 @@ reco <- function(R, Temp, Tref = 10, T0 = -46.02, method = "all"){
 		try(nls(R ~ t1 * exp(E0 * (1/(Tref-T0) - 1/(Temp-T0))), start=list(t1 = t1, E0 = E0), model = TRUE), silent = TRUE)
 		}
 	Arr <- lapply(exp(seq(0,10,0.5)), function(x) tryArr(x))
-	Arr <- Arr[sapply(Arr, class) != "try-error"]
-	Arr <- Arr[which.min(sapply(Arr, function(x) x[]$convInfo$finIter))][[1]]
-	t2 <- coef(Arr)[2]
+	if(sum(sapply(Arr, class) != "try-error")==0){
+		Arr <- NA
+		class(Arr) <- "try-error"
+		t2 = 10
+	}
+	else{
+		Arr <- Arr[sapply(Arr, class) != "try-error"]
+		Arr <- Arr[which.min(sapply(Arr, function(x) x[]$convInfo$finIter))][[1]]
+		t2 <- coef(Arr)[2]
+	}
 	t3 <- t2/2
 	# Q10
 	Q10 <- try(nls(R ~ t1 * t2^((Temp-Tref)/10), start=list(t1 = 1, t2 = 1), model = TRUE), silent = TRUE)
 	# LT
-	LT <- try(nls(R ~ t1 * exp(-t2 / (Temp+273.15-t3)), start=list(t1 = t1, t2 = t2, t3 = t3), model = TRUE, control=nls.control(minFactor=1/4096)), silent = TRUE)
+	LT <- try(nls(R ~ t1 * exp(-t2 / (Temp+273.15-t3)), start=list(t1 = t1, t2 = 308.56, t3 = 227.13), model = TRUE, control=nls.control(minFactor=1/4096)), silent = TRUE)
 	# restricted LT
 	LTR <- try(nls(R ~ t1 * exp(-308.56 / (Temp+46.02)), start=list(t1 = t1), model = TRUE), silent = TRUE)
 	# Logistic

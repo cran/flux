@@ -28,7 +28,7 @@ Chamber headspace volume. Because concentrations are typically small volume matt
 Area covered by the measurement chamber. Defaults to 1. For dimensionless sampling just leave the default. As with the volume it matters a lot for the end value, therefore it should be determined as exactly as possible.
 }
   \item{M}{
-Molar weight of the gas for wich concentration data is given. Defaults to 44 because two of the three most commonly considered greenhouse gases share this molar weight (N2O and CO2). When calculating the flux rate from methane concentrations change accordingly (16 g/mol).
+Molar weight of the gas for wich concentration data is given. Defaults to 44 because two of the three most commonly considered greenhouse gases share this molar weight (\eqn{N_2O}{N2O} and \eqn{CO_2}{CO2}). When calculating the flux rate from methane concentrations change accordingly (16 g/mol).
 }
   \item{t}{
 Chamber closing time or more exactly the time span between the measurement of c0 and ct. When derived from a regression model this might not be the whole chamber closing time.
@@ -49,7 +49,7 @@ The gas constant R is used with its standard value 8.314 Pa/K*mol.
 }
 
 \value{
-Returns one numeric value that represents the flux rate in mass unit (depending on input concentration) per m2 and hour.
+Returns one numeric value that represents the flux rate in mass unit (depending on input concentration) per \eqn{m^2}{sqm} and hour.
 }
 
 \author{

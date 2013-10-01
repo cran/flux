@@ -3,10 +3,10 @@
 \alias{tt.pre}
 \docType{data}
 \title{
-One day data from dynamic closed chamber measurements in the Trebeltal
+One day data from non-steady state closed chamber measurements in the Trebeltal
 }
 \description{
-The data comes from the Trebeltal / Northeastern Germany and has been recorded with flexible dynamic closed chambers in March 2011. It contains concentration data from 18 chamber measurements including calibration gas measurements that have been carried out alternatingly on the GC.
+The data comes from the Trebeltal / Northeastern Germany and has been recorded with flexible non-steady state closed chambers in March 2011. It contains concentration data from 18 chamber measurements including calibration gas measurements that have been carried out alternatingly on the GC.
 }
 
 \usage{data(tt.pre)}
@@ -36,7 +36,7 @@ The data comes from the Trebeltal / Northeastern Germany and has been recorded w
 }
 
 \details{
-The 18 chamber measurements are carried out on three vegetation types (Phragmites, Typha, Carex) with two treatments each (mown / unmown). At time of measurement no treatment has been applied yet. 
+The 18 chamber measurements are carried out on three vegetation types (\emph{Phragmites}, \emph{Typha}, \emph{Carex}).
 }
 
 \source{

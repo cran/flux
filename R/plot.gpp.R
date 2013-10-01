@@ -14,7 +14,8 @@ plot.gpp <- function(x, nm = "", single.pane = TRUE, ...){
 	# NEE
 	points(GPP + x$data$Reco + x$data$offset ~ PAR, data=x$mg$model, pch="+", col="grey")
 	# straight prediction
-	lines((predict(x$mg) + x$data$Reco + x$data$offset) ~ x$mg$model$PAR)
+	PAR.ord <- order(x$mg$model$PAR)
+	lines((predict(x$mg) + x$data$Reco + x$data$offset)[PAR.ord] ~ x$mg$model$PAR[PAR.ord])
 	# smooth prediction, therefore:
 	# model of temperature vs PAR
 	mpt <- loess(x$data$PAR.Temp ~ PAR, x$mg$model)
@@ -36,5 +37,5 @@ plot.gpp <- function(x, nm = "", single.pane = TRUE, ...){
 	plot(nee.meas ~ nee.pred, xlim=nee.range, ylim=nee.range, main="NEE measured vs predicted", ylab = "NEE measured", xlab = "NEE predicted", ...)
 	abline(lm(nee.meas ~ nee.pred))
 	abline(coef=c(0,1), lty=3)
-	legend("topleft", bty="n", legend = paste("R2 = ", round(summary(lm(nee.meas ~ nee.pred))$r.squared, 2)))
+	legend("topleft", bty="n", legend = c(paste("R2 = ", round(summary(lm(nee.meas ~ nee.pred))$r.squared, 2)), paste("Intercept = ", round(coef(lm(nee.meas ~ nee.pred))[1],3)), paste("Slope = ", round(coef(lm(nee.meas ~ nee.pred))[2],3))), cex=1.2)
 }

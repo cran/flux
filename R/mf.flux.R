@@ -1,5 +1,5 @@
 mf.flux <- 
-function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pdk = 0.5, min.dp = 20, nrmse.lim = 0.1, r2.qual = 0.9, range.lim = 5, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE)){
+function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1, wndw = 0.1, pdk = 0.5, min.dp = 20, nrmse.lim = 0.1, r2.qual = 0.9, range.lim = 5, out.unit = "auto", elementar = FALSE, hardflag = list(range = TRUE), consecutive = FALSE){
 	## which method to use
 	METHODS <- c("r2", "rmse", "AIC")
 	method <- pmatch(method, METHODS)
@@ -39,8 +39,11 @@ function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1,
 	x <- dat[,c("ghg", "time", "area", "volume", "t.air", "p.air")]
 	# prepare time entries
 	x$time <- as.vector(x$time - min(x$time))
-	x$time <- x$time * iv
 	x <- x[order(x$time),]
+	# if time follows a fixed interval, create times
+	if(iv!=1){
+		x$time <- seq(length(x$time))*iv
+	}
 	
 	## other preparations
 	# put original data aside for later reporting
@@ -48,10 +51,23 @@ function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1,
 	# get original ghg.range
 	ghg.range <- range(x$ghg, na.rm=TRUE)
 	
+	## consecutive approach
+	if(consecutive){
+		ghg.n <- x$ghg-min(x$ghg)+1
+		ghg.n <- ghg.n/max(ghg.n)
+		time.n <- seq(n)
+		wndw.n <- n*wndw
+		indizes <- embed(time.n, wndw.n)
+		sel <- which(runsd(apply(indizes, 1, function(y) coef(lm(ghg.n[y] ~ time.n[y]))[2]), wndw.n) < 0.005)
+		sel <- c(sel, max(sel)+seq(floor(wndw.n)))
+		lm4flux <- lm(ghg ~ time, data=x[sel,])
+	}
+	
 	## check for high frequency strong fluctuations and remove data points
 	# first check for unbalanced concentration measurements
 	# in this case hff is defined all which is not the prevailing value
-	unik <- summary(as.factor(x$ghg))
+	xghg.fac <- as.factor(x$ghg)
+	unik <- summary(xghg.fac, maxsum=length(levels(xghg.fac)))
 	if(max(unik)/length(x$ghg) > pdk){
 		conz <- as.numeric(names(sort(unik, decreasing=TRUE)))[1]
 		x$hff <- x$ghg!=conz
@@ -60,8 +76,7 @@ function(x, var.par, method = "r2", time.unit = "S", all.through = TRUE, iv = 1,
 	# but only when range.lim <= ghg.range
 	else{
 		if(diff(ghg.range) > range.lim){
-			time.max <- max(x$time)
-			rsd <- runsd(x$ghg, ceiling(time.max*wndw))/diff(ghg.range)
+			rsd <- runsd(x$ghg, ceiling(n*wndw))/diff(ghg.range)
 			x$hff <- rsd >= wndw
 		}
 		else{

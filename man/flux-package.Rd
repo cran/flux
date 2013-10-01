@@ -12,8 +12,8 @@ Several functions for the estimation of greenhouse gas flux rates using dynamic 
 \tabular{ll}{
 Package: \tab flux\cr
 Type: \tab Package\cr
-Version: \tab 0.2-1\cr
-Date: \tab 2012-04-17\cr
+Version: \tab 0.2-2\cr
+Date: \tab 2013-10-01\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }
@@ -24,11 +24,13 @@ run \code{\link{flux}} or \code{\link{fluxx}} (for medium frequency data)
 on the result returned by \code{\link{chop}} and get flux rates in an 
 easy to interpret table including quality flags. 
 Plot diagnostic plots as pdf per factor level to a folder or simply to 
-the screen.
+the screen. Use \code{\link{gpp}} to model GPP and \code{\link{reco}} to 
+model ecosystem respiration. Several helper functions for ghg analysis are
+also provided.
 }
 
 \author{
-Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>, Franziska Koebsch <franziska.koebsch@uni-rostock.de>, Ulrike Hagemann <ulrike.hagemann@zalf.de>
+Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>, Franziska Koebsch <franziska.koebsch@uni-rostock.de>, Ulrike Hagemann <ulrike.hagemann@zalf.de>, Anke Günther <anke.guenther@uni-rostock.de>
 
 Maintainer: Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>
 }
@@ -46,5 +48,5 @@ chambers in peatlands. Soil Biology and Biochemistry 42: 507-515.
 \keyword{ package }
 
 \seealso{
-\code{\link[HMR]{HMR}} for a different approach to flux rate estimation from chamber data (aditionally it is meant for static chamber data).
+\code{\link[HMR]{HMR}} for a different approach to flux rate estimation from chamber data.
 }

@@ -9,7 +9,7 @@ Model \eqn{R_{eco}}{R_eco} from CO2 exchange closed chamber data.
 }
 
 \usage{
-reco(R, Temp, Tref = 10, T0 = -46.02, method = "all")
+reco(R, Temp, Tref = 10, T0 = -46.02, method = "all", min.dp = 6)
 }
 
 \arguments{
@@ -26,7 +26,10 @@ Numeric value giving the reference temperature used in the Arrhenius type model.
 Numeric value giving the activation temperature used in the Arrhenius type model. Defaults to -46.02 (°C).
 }
   \item{method}{
-Specifies the model to be used. Partial match is possible. One can either check all included models (\code{"all"}), select the best performing model (according to \code{\link[stats]{AIC}}; \code{"best"}), or do all models that do not fail in fitting (\code{"not.failed"}) or specify the wanted model directly: \code{"linear"}, \code{"arrhenius"}, \code{"Q10"}, \code{"lt"} (Lloyd & Taylor), \code{"ltr"} (Lloyd & Taylor restricted), \code{"logistic"}. See details.
+Specifies the model to be used. Partial match is possible. One can either check all included models (\code{"all"}), select the best performing model (according to \code{\link[stats]{AIC}}; \code{"best"}), or do all models that do not fail in fitting (\code{"not.failed"}) or specify one particular model: \code{"linear"}, \code{"arrhenius"}, \code{"Q10"}, \code{"lt"} (Lloyd & Taylor), \code{"ltr"} (Lloyd & Taylor restricted), \code{"logistic"}. See details.
+}
+  \item{min.dp}{
+Integer. Minimum number of data points accepted. If number is below function execution is stopped and a warning is issued.
 }
 }
 

@@ -9,37 +9,74 @@ Model GPP from \eqn{CO_2}{CO2} closed chamber flux data under consideration of e
 }
 
 \usage{
-gpp(NEE, PAR, PAR.Temp, Reco.m, allow.offset = FALSE)
+gpp(NEE, PAR, PAR.Temp, Reco.m, ts.NEE = NULL, ts.Reco = NULL, method = 
+"Michaelis-Menten", units = "30mins", allow.offset = FALSE, virtual = FALSE, 
+start.par = max(PAR), ...)
 }
 
 \arguments{
   \item{NEE}{
-Numeric vector with \eqn{CO_2}{CO2} fluxes obtained under light conditions.
+Numeric vector with \eqn{CO_2}{CO2} from measurements of \eqn{CO_2}{CO2} net ecosystem exchange (NEE).
 }
   \item{PAR}{
-Numeric vector with PAR readings that where obtained during \eqn{CO_2}{CO2} flux measurements.
+Numeric vector of mean irradiation during \eqn{CO_2}{CO2} flux measurements. Can be supplied as photosynthetically active radiation (PAR) or photosynthetic photon flux density (PPFD).
 }
   \item{PAR.Temp}{
-Numeric vector with temperature readings that where obtained during \eqn{CO_2}{CO2} flux measurements. The relevant temperature (e.g., air, soil in -2cm/-5cm/-10cm depth) depends on the ecosystem under study.
+Numeric vector of mean recorded temperature readings during \eqn{CO_2}{CO2} flux measurements. Has to correspond with the particular temperature used in \eqn{R_{eco}}{R_eco} modeling (e.g., air, soil in -2cm/-5cm/-10cm depth).
 }
   \item{Reco.m}{
-Model structure obtained from running \code{\link{reco}}
+Model structure obtained from running \code{\link{reco}} or vector with estimated Reco values. The latter has to contain (at least) the values that are valid at the times of the NEE measurements. Typically the data will result from estimating hourly or half-hourly \eqn{R_{eco}}{R_eco} values using \eqn{R_{eco}}{R_eco} models derived with \code{reco} and temperature data from a climate station. 
+}
+  \item{ts.NEE}{
+POSIXlt vector holding the timestamp of the \code{NEE} values. Has to be specified if \eqn{R_{eco}}{R_eco} values instead of an \eqn{R_{eco}}{R_eco} model are given in \code{Reco.m}. NEE and Reco values are linked to each other based on their timestamps specified in \code{ts.NEE} and \code{ts.Reco}, respectively. The two timestamps can be different and the function links NEE and Reco values based on the time interval given in \code{units}.
+}
+  \item{ts.Reco}{
+POSIXlt vector holding the timestamp of the \eqn{R_{eco}}{R_eco} values. Has to be specified if \eqn{R_{eco}}{R_eco} values instead of an \eqn{R_{eco}}{R_eco} model are given in \code{Reco.m}. The function assumes that this is the case if \code{ts.Reco != NULL}.
+}
+  \item{method}{
+The function knows several equations to model the relationship between gpp and irradiation. At the moment \code{"Michaelis-Menten"}, \code{"Falge"}, \code{"Smith"}, and \code{"Misterlich"} are implemented which are all discussed in Falge et al. 2001. Partial matching is applied. Defaults to \code{"Michaelis-Menten"}. See details for equations.
+}
+  \item{units}{
+Character string specifying how \code{ts.NEE} shall be rounded. If \code{Reco.m} holds values instead of an \eqn{R_{eco}}{R_eco} model structure the NEE and \eqn{R_{eco}}{R_eco} values are matched based on their timestamp after \code{ts.NEE} has been rounded according to \code{units}.
 }
   \item{allow.offset}{
-Logical. Shall GPP values other than 0 be allowed at \code{PAR} = 0? See details.
+Logical. Shall GPP values other than 0 be allowed at zero irradiation? See details.
+}
+  \item{virtual}{
+Logical. If \code{TRUE}, virtual NEE data are generated that show a typical saturation curve with saturation at mean \code{NEE}. Can be used in bulk gpp modeling to allow falling back to a mean model.
+}
+  \item{start.par}{
+Numeric between 0 and \code{max(PAR)}. All data points with \code{PAR <= start.par} are used to obtain a start value for alpha via linear regression. Defaults to \code{max(PAR)}. See details.
+}
+  \item{\dots}{
+Any arguments passed to \code{\link[stats]{nls}} which is used internally to do the model fitting.
 }
 }
 
 \details{
-There is a well known relationship between \eqn{CO_2}{CO2} uptake by plants and photosynthetically active radiation that can be modelled using the Michaelis-Menten kinetic (e.g., Schmitt et al. 2010). This is what the function does. However, in the field net ecosystem exchange (NEE) is measured. NEE largely consists of two components: Ecosystem respiration (\eqn{R_{eco}}{R_eco}) and the uptake of \eqn{CO_2}{CO2} by plants (gross primary production, GPP). Therefore, it is necessary to subtract \eqn{R_{eco}}{R_eco} from the measured NEE to obtain GPP that can be used for the modelling against PAR.
+The function models the relationship between \eqn{CO_2}{CO2} uptake by plants (gross primary production, GPP) and irradiation using one out of 4 methods (Falge et al. 2001). Per default the Michaelis-Menten kinetic (e.g., Schmitt et al. 2010) is used. The following models can be fitted to the data:
 
-Real \eqn{R_{eco}}{R_eco} at the time of the NEE measurement is typically unkown because neither with closed chambers nor with eddy covariance is it possible to do dark and light measurements at the same time. Therefore, \eqn{R_{eco}}{R_eco} has to be modelled based on dark chamber or nighttime measurements (see (\code{\link{reco}}). For modelling GPP from NEE chamber measurements with \code{gpp}, the function just needs the measured \code{NEE}, the associated \code{PAR} and \code{PAR.Temp}erature values and the \eqn{R_{eco}}{R_eco} model (\code{Reco.m}) that shall be used for estimating \eqn{R_{eco}}{R_eco} values using the \code{PAR.Temp} data. It doesn't matter whether the \eqn{R_{eco}}{R_eco} model covers the same period as the \code{NEE} data or is derived from a longer period of time. The latter is often better to get more reliable models.
 
-The Michaelis Menten fit to the \code{GPP}/\code{PAR} relationship bases on the idea that plants (at least C3 plants) do not take up \eqn{CO_2}{CO2} when there is no \code{PAR}. However, sometimes it happens that the Reco model gives quite unrealistic estimates for \eqn{R_{eco}}{R_eco} during NEE measurements leading to an alleged considerable uptake of \eqn{CO_2}{CO2} under no or very low light conditions. This in turn leeds to unrealistic and not well fitted models. Therefore, it is possible to correct the offset (default) by not allowing an offset: \code{allow.offset = FALSE}. The offset is determined automatically by constructing a linear model using the data points until \code{PAR} = 500 and predicting GPP at \code{PAR} = 0. The offset is then subtracted from all GPP values and is later automatically added when doing the diagnostic plots. 
+\eqn{GPP = \frac{GPmax * alpha * PAR}{alpha * PAR + GPmax}}{GPP = (GPmax * alpha * PAR)/(alpha * PAR + GPmax)} (Michaelis-Menten)
 
-The start parameters for the non-linear fit (via \code{\link[stats]{nls}}) are derived from the data itself. For alpha (initial slope of the curve) the slope of  a linear model of GPP against \code{PAR} constructed from  the data points until \code{PAR} = 500 is used. For GPmax the mean of the five highest GPP values is taken.
+\eqn{GPP = \frac{alpha * PAR}{1 - \frac{PAR}{2000} + \frac{alpha*PAR}{GPmax}}}{GPP = (alpha * PAR)/(1 - (PAR/2000) + (alpha*PAR/GPmax))} (Falge)
 
-It is advisable to test various configurations regarding the \eqn{R_{eco}}{R_eco} model and testing the effect of allowing the offset.  
+\eqn{GPP = \frac{GPmax * alpha * PAR}{\sqrt{GPmax^2 + (alpha*par)^2}}}{GPP = (alpha * PAR * GPmax)/sqrt(GPmax^2 + (alpha*PAR)^2)} (Smith)
+
+\eqn{GPP = GPmax * (1 - e^{\frac{alpha * PAR}{GPmax})}}{GPP = GPmax * (1 - exp((alpha*PAR) / GPmax))} (Misterlich)
+
+
+with \code{PAR} the incoming light (irradiation). Note, that irradiation can be given in \code{PAR} or in PPFD although the equation states \code{PAR}. \code{GPmax} and \code{alpha} are the parameters that are fitted. \code{GPmax} refers to the maximum gross primary production at saturating or optimum light whereas alpha refers to the ecosystem quantum yield and gives the starting slope of the model.
+
+Closed chamber measurements in the field typically capture net ecosystem exchange (\code{NEE}), which is the sum of the two opposing processes ecosystem respiration (\eqn{R_{eco}}{R_eco}) and GPP. Therefore, it is necessary to subtract modeled \eqn{R_{eco}}{R_eco} from the measured \code{NEE} to obtain GPP that can be used for the modelling against irradiance.
+
+Real \eqn{R_{eco}}{R_eco} at the time of the \code{NEE} measurement is typically unkown because dark and light measurements cannot be taken at the same spot at the same time. Therefore, \eqn{R_{eco}}{R_eco} has to be modelled based on dark chamber or nighttime measurements (see \code{\link{reco}}). For modelling GPP from \code{NEE} chamber measurements, \code{gpp} just needs measured \code{NEE}, the associated irradiance (\code{PAR}) and temperature (\code{PAR.Temp}) values and the \eqn{R_{eco}}{R_eco} model (\code{Reco.m}). The \eqn{R_{eco}}{R_eco} model can derive from a longer period of time than the \code{NEE} data, which is often better to get more reliable models.
+
+The Michaelis Menten fit to the \code{GPP}/\code{PAR} relationship presumes that plants (at least C3 plants) do not take up \eqn{CO_2}{CO2} when there is no irradiance. However, sometimes the \eqn{R_{eco}}{R_eco} model gives quite unrealistic \eqn{R_{eco}}{R_eco} estimates for the times of NEE measurements leading to an alleged considerable uptake of \eqn{CO_2}{CO2} under no or very low light conditions. This in turn leads to unrealistic and not well fitted GPP models. Therefore, it is possible to correct the model by not allowing an offset: \code{allow.offset = FALSE} (default). The offset is determined automatically by constructing a linear model using the data points until \code{PAR} = \code{start.par} and predicting GPP at \code{PAR} = 0. The offset is then subtracted from all GPP values and is later automatically added when doing the diagnostic plots.
+
+The start parameters for the non-linear fit (via \code{\link[stats]{nls}}) are derived from the data itself. For alpha (initial slope of the model) the slope of the linear model of GPP against \code{PAR} constructed from  the data points until \code{PAR} = \code{start.par} is used. For \code{GPmax} the mean of the five highest GPP values is taken.
+
+It is advisable to test various configurations regarding the \eqn{R_{eco}}{R_eco} model and testing the effect of allowing the offset. The offset is not added back to the predicted GPP data but it is returned as part of the output (see value section).
 }
 
 \value{
@@ -52,6 +89,8 @@ The function returns an object of class \code{gpp}. It is a list with the follow
 }
 
 \references{
+Falge E, Baldocchi D, Olson R, Anthoni R, et al. 2001. Gap filling strategies for defensible annual sums of net ecosystem exchange. Agricultural and Forest Meteorology, 107:43-69.
+
 Schmitt M, Bahn M, Wohlfahrt G, Tappeiner U, Cernusca A. 2010. Land use affects the net ecosystem CO2 exchange and its components in mountain grasslands. Biogeosciences, 7:2297-2309.
 }
 
@@ -60,7 +99,7 @@ Gerald Jurasinski, \email{gerald.jurasinski@uni-rostock.de}
 }
 
 \seealso{
-\code{\link{reco}}
+\code{\link{reco}}, \code{\link{fluxx}}
 }
 
 \examples{
@@ -116,7 +155,7 @@ plot(gpp.m3)
 
 # do a gpp model per date with all spots each
 dts <- levels(ttf4gpp$date)
-# exclude measurement dates with less then 5 data points
+# exclude measurement dates with less than 5 data points
 dts <- dts[summary(ttf4gpp$date)>=5]
 gpp.mdls <- lapply(dts, function(x) with(ttf4gpp[ttf4gpp$date==x,], 
 gpp(CO2.flux, PAR, t.soil2, reco.m[[1]])))
