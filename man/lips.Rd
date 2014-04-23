@@ -20,12 +20,12 @@ Numeric vector or one that could be coerced to numeric along which interpolation
 Numeric vector of values which shall be interpolated.
 }
   \item{x.step}{
-Numeric giving at what time intervall interpolation shall be done. In seconds! Thus half hourly interpolation is achieved with \code{x.step = 1800}.
+Numeric giving at what time interval interpolation shall be done. In seconds! Thus half hourly interpolation is achieved with \code{x.step = 1800}.
 }
 }
 
 \value{
-Data.frame containing the original and the interpolated x and y values.
+Data.frame containing the interpolated x (\code{x.out}) and y (\code{x.out}) values.
 }
 
 \author{

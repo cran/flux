@@ -30,7 +30,7 @@ The function is invoked for its side effects and does not return anything.
 }
 
 \author{
-Gerald Jurasinski <gerald.jurasinski@uni-rostock.de>
+Gerald Jurasinski, \email{gerald.jurasinski@uni-rostock.de}
 }
 
 \seealso{

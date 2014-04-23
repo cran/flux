@@ -3,7 +3,7 @@
 \alias{tt.pre}
 \docType{data}
 \title{
-One day data from non-steady state closed chamber measurements in the Trebeltal
+One day data from closed chamber measurements in the Trebeltal
 }
 \description{
 The data comes from the Trebeltal / Northeastern Germany and has been recorded with flexible non-steady state closed chambers in March 2011. It contains concentration data from 18 chamber measurements including calibration gas measurements that have been carried out alternatingly on the GC.
@@ -40,7 +40,12 @@ The 18 chamber measurements are carried out on three vegetation types (\emph{Phr
 }
 
 \source{
-unpublished preliminary data
+unpublished preliminary data, whole data set in
+
+Günther A, Huth V, Jurasinski G, Glatzel S (2013a) Scale-dependent temporal variation during the determination of the methane balance of a temperate fen. Greenhouse Gas Measurement & Management DOI: 10.1080/20430779.2013.850395
+
+Huth V, Günther A, Jurasinski G, Glatzel S (2013) The impact of an extraordinarily wet summer on methane emissions from a 15-year re-wetted fen in north-east Germany. Mires & Peat 13.2:1–7
+
 }
 
 \examples{

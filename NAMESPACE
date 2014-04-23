@@ -1,8 +1,8 @@
 ## export regular function names
-export(auc, chop, export, flux, fluxx, gflux, gpp, inspect, lips, reco)
+export(auc, checkm, chop, export, flux, fluxx, gflux, gpp, gpp2, inspect, lips, modjust, reco, tbl8)
 
 ## export regular functions with dot names
-export(append.df, auc.mc, flux.calib, flux.odae, flux.conv, mf.flux)
+export(append.df, auc.mc, budget.gpp, budget.reco, budget.ie, flux.calib, flux.odae, flux.conv, gpp.bulk, mf.flux, reco.bulk, round.POSIXlt)
 
 ## import from others
 importFrom(caTools, combs)
@@ -22,3 +22,6 @@ S3method(plot, reco)
 S3method(print, fluss)
 S3method(print, fluxes)
 S3method(print, fluxxes)
+# round: base
+S3method(round, POSIXlt)
+S3method(round, POSIXct)

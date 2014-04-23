@@ -1,4 +1,5 @@
-gpp <- function(NEE, PAR, ts.NEE, PAR.Temp, Reco.m, ts.Reco = NULL, method = "Michaelis-Menten", units = "30mins", allow.offset = FALSE, virtual = FALSE, start.par = max(PAR), ...){	
+gpp2 <- function(NEE, PAR, ts.NEE, oot, oot.id = c("D", "T"), method = "Michaelis-Menten", allow.offset = FALSE, virtual = FALSE, start.par = max(PAR), ...){
+	
 	# check method
 	METHODS <- c("Michaelis-Menten", "Falge", "Smith", "Misterlich")
 	method <- pmatch(method, METHODS)
@@ -9,41 +10,19 @@ gpp <- function(NEE, PAR, ts.NEE, PAR.Temp, Reco.m, ts.Reco = NULL, method = "Mi
 		PAR <- c(seq(0, 200, length.out=10), seq(250, 1550, length.out=20))
 		ts.NEE <- seq(min(ts.NEE, na.rm=TRUE), max(ts.NEE, na.rm=TRUE), length.out=30)
 	}
-	# check whether ts.Reco is provided. If so, it is assumed that Reco.m contains  
-	# modelled reco values and PAR.Temp contains the relevant temperatures and at least contains the 
-	# data for dates/times where the values in NEE and PAR were obtained
-	if(!is.null(ts.Reco)){
-		ts.NEEr <- round.POSIXlt(ts.NEE, digits=units)
-		dat.NEE <- data.frame(NEE = NEE, PAR = PAR, dtr = ts.NEEr, dtrchar = as.character(ts.NEEr))
-		dat.Reco <- data.frame(Reco = Reco.m, dt = ts.Reco, dtchar = as.character(ts.Reco))
-		dat.all <- merge(dat.Reco, dat.NEE, by.x="dtchar", by.y="dtrchar")
-		dat.all <- dat.all[order(dat.all$PAR),]
-		NEE <- dat.all$NEE
-		Reco <- dat.all$Reco
-		PAR <- dat.all$PAR
-		PAR.Temp <- NULL
-		Reco.m <- NULL
-	}
-	else{
-		# predict Reco values using the Reco model(s) provided
-		# first extract and assign when there is a budget.reco results structure (class = "breco") provided
-		if(class(Reco.m)=="breco"){
-			t.diff <- abs(sapply(Reco.m, function(x) julian(x$ts)) - mean(julian(ts.NEE)))
-			Reco.m <- Reco.m[which.min(t.diff)]
-			which.Temp <- Reco.m[[1]]$which.Temp
-			Reco.m <- Reco.m[[1]]$mod[[1]]
-			PAR.Temp <- PAR.Temp[,which.Temp]
-		}
-		# then predict
-		Reco <- predict(Reco.m, newdata = data.frame(Temp = PAR.Temp))
-	}
-	# calculate GPP
-	GPP <- NEE - Reco
+
+	# compile data
+	sel <- apply(as.matrix(dist(as.numeric(julian(ts.NEE)))*24*60)[oot==oot.id[1],oot==oot.id[2]], 2, which.min)
+	mins <- apply(as.matrix(dist(as.numeric(julian(ts.NEE)))*24*60)[oot==oot.id[1],oot==oot.id[2]], 2, min)
+	GPP <- NEE[as.numeric(names(sel))] - NEE[sel]
+	PAR <- PAR[as.numeric(names(sel))]
+	dat <- data.frame(NEE = NEE[as.numeric(names(sel))], GPP = GPP, Reco = NEE[sel], PAR = PAR, timestamp = ts.NEE[as.numeric(names(sel))], mins = mins)
 	# correct offset when wanted (default)
 	offset <- 0
 	if(!allow.offset){
 		#offset <- as.numeric(coefs[1])
-		offset <- max(GPP)
+		mGPP <- max(GPP)
+		if(mGPP > 0){offset <- mGPP}
 		GPP <- GPP - offset
 	}
 	# derive start values for the non-linear fitting
@@ -89,15 +68,7 @@ gpp <- function(NEE, PAR, ts.NEE, PAR.Temp, Reco.m, ts.Reco = NULL, method = "Mi
 		mgs <- mgs[sapply(mgs, class) != "try-error"]
 		mg <- mgs[which.min(sapply(mgs, function(x) x[]$convInfo$finIter))][[1]]
 	}
-	# prepare output
-	dat <- data.frame(NEE = NEE, GPP = GPP, Reco = Reco, PAR = PAR, timestamp = ts.NEE, mins = 0)
-	if(!is.null(ts.Reco)){
-			res <- list(mg = mg, data = list(dat = dat, offset = offset, start=s.list))
-			class(res) <- "gpp2"
-	}
-	else{
-		res <- list(mg = mg, mr = Reco.m, data = list(dat = dat, offset = offset, start=s.list, PAR.Temp = PAR.Temp))
-		class(res) <- "gpp"
-	}
+	res <- list(mg = mg, data = list(dat = dat, offset = offset, start=s.list))
+	class(res) <- "gpp2"
 	return(res)
 }

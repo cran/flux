@@ -1,6 +1,43 @@
 FLUX VERSIONS
 
 
+Version 0.3-0
+
+  * New functions reco.bulk and gpp.bulk for
+  bulk fitting of GPP and Reco models.
+
+  * New functions budget.gpp and budget.reco
+  for estimating fluxes with bulk fitted
+  models and logger data
+
+  * New function budget.ie for estimating
+  interpolation errors introduced by inter-
+  polating fluxes across models in a time
+  series
+
+  * New helper function tbl8 for getting easy 
+  access to model parameters
+
+  * New function modjust that provides some
+  ways to globally adjust fitted Reco and GPP 
+  models
+
+  * New function gpp2 that offers a new approach
+  to GPP modelling: Reco values are directly taken
+  from the provided flux data
+
+  * New round functions for time classes POSIXlt
+  and POSIXct
+
+  * Bug fixes and consistency changes to gpp, reco
+  plot.gpp
+
+  * New function plot.reco
+
+  * General overhaul to the help and examples
+
+  * New data set Ahlenmoor
+
 Version 0.2-2
 
   * Bug fixes and extensions to gpp. The nls that

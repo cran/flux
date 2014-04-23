@@ -4,15 +4,18 @@ lips <- function(x, y, x.step = 1){
 	y <- y[sel]
 	x.diff <- x[-1] - x[-length(x)]
 	if(class(x.diff)=="difftime"){
-		x.diff <- difftime(x[-1], x[-length(x)], units="days")
+		x.diff <- difftime(x[-1], x[-length(x)], units="secs")
 		## check whether there is zero x.diff (must be treated special when x is a time)
 		sel.x.diff0 <- x.diff==0
 		if(sum(sel.x.diff0)>0){
 			x[which(sel.x.diff0)+1] <- x[which(sel.x.diff0)+1] + x.step
-			x.diff <- difftime(x[-1], x[-length(x)], units="days")
+			x.diff <- difftime(x[-1], x[-length(x)], units="secs")
 		}
 		if(x.step!=1){
-			x.diff <- as.numeric(x.diff*24*60*60/x.step)
+			x.diff <- as.numeric(x.diff/x.step)
+		}
+		else{
+			x.diff <- as.numeric(x.diff)
 		}
 	}
 	ns <- lapply(x.diff, function(z) seq(z)-1)
@@ -27,6 +30,14 @@ lips <- function(x, y, x.step = 1){
 		y.out <- c(unlist(lapply(c(1:length(inc)), function(z) y[z]+inc[[z]])), y[length(y)])
 	}
 	x.out <- seq(min(x), max(x), x.step)
+	###
+	# just preliminary, fixes a length problem
+	# if(length(x.out)!=length(y.out)){
+		# fl <- min(length(x.out), length(y.out))
+		# x.out <- x.out[seq(fl)]
+		# y.out <- y.out[seq(fl)]
+	# }
+	###
 	res <- data.frame(x.out = x.out, y.out = y.out)
 	return(res)
 }

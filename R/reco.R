@@ -77,6 +77,6 @@ reco <- function(R, Temp, Tref = 10, T0 = -46.02, method = "all", min.dp = 6){
 	if(method == 9){
 		res <- res[6]
 	}					
-	
+	class(res) <- "reco"
 	return(res)
 }
