@@ -5,7 +5,7 @@ export(auc, checkm, chop, export, flux, fluxx, gflux, gpp, gpp2, inspect, lips, 
 export(append.df, auc.mc, budget.gpp, budget.reco, budget.ie, flux.calib, flux.odae, flux.conv, gpp.bulk, mf.flux, reco.bulk, round.POSIXlt)
 
 ## import from others
-importFrom(caTools, combs)
+importFrom(caTools, combs, runsd)
 
 ## Registration of S3 methods
 import(stats)
@@ -25,3 +25,7 @@ S3method(print, fluxxes)
 # round: base
 S3method(round, POSIXlt)
 S3method(round, POSIXct)
+
+importFrom("grDevices", "boxplot.stats", "dev.new", "dev.off",
+           "devAskNewPage", "pdf")
+importFrom("utils", "combn", "write.table")

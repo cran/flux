@@ -1,5 +1,5 @@
-9776dd984320215d345d982f4c60b41c *DESCRIPTION
-cdb3406cbfb89b244057badb219d0b89 *NAMESPACE
+3d0f49a793f89fff34090818cac328fd *DESCRIPTION
+61e58da009c839100a6ca9295fc64a6f *NAMESPACE
 002358ae7c22ad231f9a89e353fa3c88 *R/append.df.R
 e6c7a913cf507321cdfc2cba923d2ef3 *R/auc.R
 5ebb95eff9f2bc2138505dd48f2bdd3a *R/auc.mc.R
@@ -38,11 +38,11 @@ af221c8c983fa7d41e11ad13ce213f2f *R/print.fluxxes.R
 dae13fb75c8ffa210281b1a197ed5e75 *R/round.POSIXlt.R
 14284080f6d3f0c0d55deff096d2c041 *R/tbl8.R
 8d55b997f7642b757dba0871ea9849ef *R/zzz.R
-2f18607cbd5d8962177be00fe7744229 *data/amc.rda
-9859fc2187d8e8c8f8e878f307c31843 *data/amd.rda
-54b0a82d1bb87f9c9b133325f91c464f *data/tt.flux.rda
-75471697567b2072c3a6b38e930e7106 *data/tt.nee.rda
-e009d4b6540b892399f9b0969a7e7f87 *data/tt.pre.rda
+ac7f1329fb0a317ebd5b1021f08abb3d *data/amc.rda
+6e7ae96091a170cffcf61c7423452c98 *data/amd.rda
+b3430fab48d88e0fe5ea9a0627530476 *data/tt.flux.rda
+943a5eeee28596972de8d35cf101b995 *data/tt.nee.rda
+bd76fc52e06a28902dd88ad6ee4f4cf1 *data/tt.pre.rda
 d814602b7d17473f534704b00cbcfc5c *inst/ChangeLog
 69c2198ea4231618c327a5b58428f907 *man/amc.Rd
 75e7106e555e151fd581d74ae0e4b374 *man/amd.Rd
